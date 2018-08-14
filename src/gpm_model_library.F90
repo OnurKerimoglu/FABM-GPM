@@ -5,6 +5,7 @@ module gpm_model_library
    use gpm_plankton
    use gpm_abio_pel
    use gpm_abio_sed
+   use gpm_version
    ! Add new components modules here
 
    implicit none
@@ -13,12 +14,18 @@ module gpm_model_library
 
    type,extends(type_base_model_factory) :: type_factory
       contains
+      procedure :: initialize
       procedure :: create
    end type
 
    type (type_factory),save,target,public :: gpm_model_factory
 
 contains
+   
+   subroutine initialize(self)
+      class (type_factory), intent(inout) :: self
+      call self%register_version('GPM',git_commit_id//' ('//git_branch_name//' branch)')
+   end subroutine initialize
 
    subroutine create(self,name,model)
       class (type_factory),intent(in) :: self
