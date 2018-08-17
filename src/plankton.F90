@@ -497,7 +497,7 @@
    end if
    !P
    if (self%resolve_N) then 
-     _GET_(self%id_plaN,plaN) ! plankton phosphours
+     _GET_(self%id_plaN,plaN) ! plankton nitrogen
    end if
    
    IF (self%fracaut .lt. 1.0) then !i.e., if there will be any heterotrophy
