@@ -802,7 +802,7 @@
        _SET_ODE_(self%id_DIN,-NGainA*(plaC+self%m0) ) !uptN*self%fracaut
      end if
      !Si
-     if (self%resolve_N) then
+     if (self%resolve_Si) then
        _SET_ODE_(self%id_DISi,-CGainA*self%Si2C*(plaC+self%m0) )
      end if
    end if
@@ -935,7 +935,7 @@
    subroutine Graze_Multi_Prey(self,fT,PR)
    !
 ! !DESCRIPTION:
-! Here, phytoplankton grazing on multiple prey is formulated.
+! Here, grazing on multiple prey is formulated.
 !
 ! !USES:
    implicit none
@@ -1005,7 +1005,7 @@
 !-----------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Monod formulation for zooplankton grazing on multiple phytoplankton (as in Fasham 1990). 
+! !IROUTINE: Monod formulation for zooplankton grazing on multiple prey (as in Fasham 1990).
 !
 ! !INTERFACE:
    pure real(rk) function fpzMonMulti(self,food,pref,foodtot,fT,KzFact)
@@ -1270,9 +1270,9 @@ end subroutine get_vertical_movement
    _LOOP_BEGIN_
 
    ! Retrieve current (local) state variable values.
-   _GET_(self%id_plaC,plaC) ! mixotroph carbon biomass
+   _GET_(self%id_plaC,plaC) ! plankton carbon biomass
 
-   ! Self-shading with explicit contribution from background phytoplankton concentration.
+   ! Self-shading with explicit contribution from background plankton concentration.
    _SET_EXTINCTION_(self%kc*plaC)
    !_SET_EXTINCTION_(0.01)
    
