@@ -1197,7 +1197,7 @@
    _DECLARE_FABM_ARGS_GET_VERTICAL_MOVEMENT_
 !
 ! !LOCAL VARIABLES:
-   real(rk)                   :: vert_vel,temp,par,I0,QPr !,yearday,par
+   real(rk)                   :: vert_vel,temp,par,I0,QPr,QNr,Qr
    real(rk), parameter        :: secs_pr_day = 86400.
 !
 !EOP
@@ -1214,7 +1214,14 @@ select case (self%velmet)
   case (0)
    vert_vel=self%w
   case (1)  !sinking velocity decreases with increasing quota
-   _GET_ (self%id_QPr_dep,QPr)
+   if (self%resolve_P) then
+    _GET_ (self%id_QPr_dep,QPr)
+    Qr=QPr
+   end if
+   if (self%resolve_N) then
+    _GET_ (self%id_QNr_dep,QNr)
+    Qr=min(Qr,QNr)
+   end if
    vert_vel=self%w * (1-1/(1+exp(10*(.5-QPr))))
   case (2) !velocity is corrected by the viscosity, calculated as a function of temperature
    _GET_  (self%id_temp,temp)  ! temperature
@@ -1234,8 +1241,13 @@ select case (self%velmet)
 end select
 
 !Set these calculated vertical_movement values 
-_SET_VERTICAL_MOVEMENT_(self%id_plaC,vert_vel) 
-_SET_VERTICAL_MOVEMENT_(self%id_plaP,vert_vel) 
+_SET_VERTICAL_MOVEMENT_(self%id_plaC,vert_vel)
+if (self%resolve_P) then
+  _SET_VERTICAL_MOVEMENT_(self%id_plaP,vert_vel)
+end if
+if (self%resolve_P) then
+  _SET_VERTICAL_MOVEMENT_(self%id_plaN,vert_vel)
+end if
 
 !_SET_DIAGNOSTIC_(self%id_vv , vert_vel*secs_pr_day)
 
