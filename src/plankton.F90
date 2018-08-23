@@ -281,7 +281,7 @@
      call self%register_state_dependency(self%id_DIN,'DIN')
      call self%register_state_dependency(self%id_detN,'detN')
    end if
-   !P
+   !Si
    if (self%resolve_Si) then
      call self%register_state_dependency(self%id_DISi,'DISi')
      call self%register_state_dependency(self%id_detSi,'detSi')
@@ -1222,7 +1222,7 @@ select case (self%velmet)
     _GET_ (self%id_QNr_dep,QNr)
     Qr=min(Qr,QNr)
    end if
-   vert_vel=self%w * (1-1/(1+exp(10*(.5-QPr))))
+   vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
   case (2) !velocity is corrected by the viscosity, calculated as a function of temperature
    _GET_  (self%id_temp,temp)  ! temperature
    !in the expression below, denominator (10**..) gives the viscosity ratio at the ambient and reference (T=20 oC) temperatures (Kestin et al. 1978). So the overall expression is: mu(20)/mu(T) * vel
