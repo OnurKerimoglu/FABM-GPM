@@ -92,8 +92,8 @@
      call self%get_parameter(self%const_detN,  'const_detN',   'mmol/m^3','constant pel. detN, if not coupled', default=14.0_rk)
      call self%get_parameter(self%const_DIN,   'const_DIN',    'mmol/m^3','constant pel. DIN, if not coupled',  default=28.0_rk)
    end if
-   !N
-   if (self%resolve_N) then
+   !Si
+   if (self%resolve_Si) then
      call self%get_parameter(self%const_detSi,  'const_detSi',   'mmol/m^3','constant pel. detSi, if not coupled', default=14.0_rk)
      call self%get_parameter(self%const_DISi,   'const_DISi',    'mmol/m^3','constant pel. DISi, if not coupled',  default=28.0_rk)
    end if
@@ -291,7 +291,7 @@
      _GET_HORIZONTAL_(self%id_detN_sed,detN_sed) ! det-N density - sediment
      _GET_HORIZONTAL_(self%id_DIN_sed,DIN_sed)  ! DIN density - sediment
    end if
-   !N
+   !Si
    if (self%resolve_Si) then
      _GET_HORIZONTAL_(self%id_detSi_sed,detSi_sed) ! det-Si density - sediment
      _GET_HORIZONTAL_(self%id_DISi_sed,DISi_sed)  ! DISi density - sediment
@@ -343,7 +343,7 @@
      DIN_loss2pel = self%DIM_diffcoef*(DIN_sed/self%thick_sed-DIN_pel)/self%thick_sed
      ! m2/d * mmol/m3 *1/m = mmol/m2/d
    end if
-   !N
+   !Si
    if (self%resolve_Si) then
      DISi_loss2pel = self%DIM_diffcoef*(DISi_sed/self%thick_sed-DISi_pel)/self%thick_sed
      ! m2/d * mmol/m3 *1/m = mmol/m2/d

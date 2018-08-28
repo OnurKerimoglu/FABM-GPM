@@ -76,7 +76,7 @@ instances:
       Imin : 25            # minimum light (if lightresp==4)
       Kp : 0.2             # half sat. conc. for P uptake (if resolve_P: .true)
       VPmax : 0.14         # max. P uptake rate (if resolve_P: .true)
-      Kn : 1.5             # half sat. conc. for P uptake (if resolve_N: .true)
+      Kn : 1.5             # half sat. conc. for N uptake (if resolve_N: .true)
       VNmax : 2.0          # max. P uptake rate (if resolve_N: .true)
       Ksi : 0.5            # half sat. conc. for Si lim growth (if resolve_Si: .true)
       Si2C : 0.1415        # max. P uptake rate (if resolve_Si: .true)
