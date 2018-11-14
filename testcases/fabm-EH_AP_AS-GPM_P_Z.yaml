@@ -1,101 +1,91 @@
 instances: 
-  sed:
-    use: .true.
+  EH_abioS:
+    use: .false.
     long_name: sediment material
-    model: ecoham/abio_sed    # Only BasicBGC branch!
+    model: ecoham/abio_sed
     parameters:
       resolve_Si: .true.        # whether to resolve Si-cycle
       coupled2water: .true.   # whether the benthic model is coupled to a pelagic model
-      det_wsed : 0.5          # sedimentation rate of pelagic detritus
-      det_decr : 0.1          # decay rate of detritus
-      Q10 : 1.5              # Q10 for remineralization
+      det1_wsed : 0.5          # sedimentation rate of pelagic detritus
+      det2_wsed : 0.5          # sedimentation rate of pelagic detritus
+      Q10 : 1.5               # Q10 for remineralization
+      brc : 0.028             # benthic rem rate for C
+      brn : 0.0333            # benthic rem rate for N
+      brp : 0.0333            # benthic rem rate for P
+      brsi: 0.0130            # benthic rem rate for Si
     initialization:
-      DIP : 0.5               # initial dissolved inorganic phosphorus
-      DIN : 7.0               # initial dissolved inorganic nitrogen
-      DISi : 7.5              # initial dissolved inorganic silicate
-      detC : 106.0            # initial detrital carbon
-      detP : 1.0              # initial detrital phosphorus
-      detN : 16.0             # initial detrital nitrogen
-      detSi : 15.0            # initial detrital silicate
+      POC : 106.0            # initial benthic organic carbon
+      POP : 1.0              # initial benthic organic phosphorus
+      PON : 16.0             # initial benthic organic nitrogentus
+      POSi : 15.0            # initial benthic organic silicate (opal)
     coupling:
-      pelagic_DIP : mat/DIP      # pelagic dissolved inorganic phosphorus
-      pelagic_DIN : mat/DIN      # pelagic dissolved inorganic nitrogen 
-      pelagic_DISi : mat/DISi    # pelagic dissolved inorganic silicate
-      pelagic_detC : mat/detC    # pelagic detrital carbon 
-      pelagic_detP : mat/detP    # pelagic detrital phosphorus 
-      pelagic_detN : mat/detN    # pelagic detrital nitrogen 
-      pelagic_detSi : mat/detSi  # pelagic detrital silicate
-  mat:
+      pelagic_O2 : EH_abioP/O2      # pelagic O2
+      pelagic_DIC : EH_abioP/DIC      # pelagic dissolved inorganic carbon
+      pelagic_DIP : EH_abioP/DIP      # pelagic dissolved inorganic phosphorus
+      pelagic_NH4: EH_abioP/DINH4    # pelagic NH4
+      pelagic_NO3: EH_abioP/DINO3    # pelagic NO3
+      pelagic_DISi : EH_abioP/DISi    # pelagic dissolved inorganic silicate
+      pelagic_det1C : EH_abioP/det1C    # pelagic detrital carbon 
+      pelagic_det1P : EH_abioP/det1P    # pelagic detrital phosphorus 
+      pelagic_det1N : EH_abioP/det1N    # pelagic detrital nitrogen
+      pelagic_det2C : EH_abioP/det2C    # pelagic detrital carbon 
+      pelagic_det2P : EH_abioP/det2P    # pelagic detrital phosphorus 
+      pelagic_det2N : EH_abioP/det2N    # pelagic detrital nitrogen 
+      pelagic_det2Si : EH_abioP/det2Si  # pelagic detrital silicate
+  EH_abioP:
     use: .true.
     long_name: pelagic material
-    model: ecoham/abio_pel    # Only BasicBGC branch!
+    model: ecoham/abio_pel
     parameters:
       resolve_Si: .true.      # whether to resolve Si-cycle
-      det_kc : 0.02           # [m2/mmolC] sp. light ext. for detC.
-      det_w : -1.             # vertical velocity (<0 for sinking)
-      det_decr : 0.15         # remineralization constant
-      Q10 : 1.5              # Q10 for remineralization
+      flux_diags: .true.      # whether to output flux diagnostics
+      metCexc: 0              # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
+      metairsea: 1            # method to resolve air-sea fluxes; 0: no air-sea flux, 1: EH (O2); 2:ERGOM (O2)
+      metairseaEH: 1          # EH-method to resolve the air-sea fluxes when metairsea=1
+      dom_kc : 0.01           # [m2/mmolC] sp. light ext. for doc.
+      det1_kc : 0.02          # [m2/mmolC] sp. light ext. for detC.
+      det2_kc : 0.02          # [m2/mmolC] sp. light ext. for det2C.
+      det1_w : -0.4           # vertical velocity of slow sinking det (<0 for sinking)
+      det2_w : -10.0          # vertical velocity of fast sinking det (<0 for sinking)
+      Q10 : 1.5               # Q10 for remineralization
+      Tref: 10.0              # reference Temperature
+      r_det1dec : 0.12        # [/d] decay rate of slow sinking detritus (into DOM)
+      r_det2dec : 0.10        # [/d] decay rate of fast sinking detritus (into DOM)
+      r_detdec_fC : 0.85      # decay rate of detritus multiplier for C
+      soc_rate : 0.00274      # [/d] decay rate of SOC to DOC
+      rhoC : 0.1              # [/d] Direct DOC rem. (will be set to 0 if resolve_bac)
+      rhoN : 0.1              # [/d] Direct DOM rem. (will be set to 0 if resolve_bac)
+      rhoP : 0.1              # [/d] Direct DON rem. (will be set to 0 if resolve_bac)
+      xknit: 0.02             # Nitrificaiton rate
+      resolve_bac: .true.     # whether to resolve bacterial remineralization
+      b_exc : 0.2             # excretion rate of bac
+      b_v : 0.5               # max upt rate of bac
+      b_xk4: 0.2              # half sat conc for DIN upt of bac
+      b_xkp: 0.05             # half sat conc for DOP upt of bac
+      b_rcn: 5.0              # molar C:N  ratio of bac
+      b_rcp: 50.0             # molar C:P  ratio of bac
     initialization:
+      O2   : 280              # initial O2 [mmolO2/m3]
+      DIC : 100000.0            # initial dissolved inorganic carbon
       DIP : 2.0               # initial dissolved inorganic phosphorus
-      DIN : 32.0              # initial dissolved inorganic nitrogen
-      DISi : 30.0              # initial dissolved inorganic silica
-      detC: 106.0             # initial detrital carbon
-      detP : 1.0              # initial detrital phosphorus
-      detN : 16.0             # initial detrital carbon
-      detSi : 15.0            # initial detrital silica
-  diatoms1:
-    use: .false.
-    long_name: diatoms
-    model: gpm/phytoplankton
-    parameters: 
-      metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
-      kc: 0.00453            #C-specific light ext. coefficient
-      kchl: 0.023            #Chl-specific light ext. coefficient                  
-      metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : 0.0                # vertical velocity (<0 for sinking)
-      metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
-      Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
-      Tref: 10.0             # reference Temperature
-      rmd : 0.02             # linear mortality rate
-      rmdq : 0.001           # quadratic mortality rate
-      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
-      C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
-      C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.0145         # max. P:C ratio (if metIntSt=1)
-      QPmin : 0.00145        # min. P:C ratio (if metIntSt=1)
-      QNmax : 0.2            # max. N:C ratio (if metIntSt=1)
-      QNmin : 0.05           # min. N:C ratio (if metIntSt=1)
-      gam : 0.05             # exudation fraction of the c/n/p taken up
-      vCmax : 1.0            # max. C uptake rate (a.k.a. 'growth rate')
-      VPmax : 0.1           # max. P uptake rate (if metIntSt=1)
-      VNmax : 1.0            # max. N uptake rate (if metIntSt=1)
-      dop_allowed: .false.   #whether the DOP is available for uptake
-      Kp : 0.2               # half sat. conc. for P uptake 
-      Kn : 1.5               # half sat. conc. for N uptake 
-      metIresp : 1           # light response method. 1: monod 2: light inh. 3:tanh 4: steele62
-      islope : 0.3           # initial slope (if lightresp== 1,2 & 3)  
-      Iopt : 40              # optimal light intensity (if lightresp==2)
-      Imin : 25              # minimum light (if lightresp==4)
-      metCexc: 1             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
-      excess: 0.0            # excess carbon assimilation fraction
-      resolve_Si: .true.     # whether to resolve Si-cycle autotrophy
-      C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
-      Ksi : 1.0              # half sat. conc. for Si lim growth (if resolve_Si: .true)
-      metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
-      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
-    initialization:
-      C : 1.06               # initial carbon
-      #P : 0.01               # initial phosphorus
-      #N : 0.16               # initial nitrogen
-    coupling:
-      DIP : mat/DIP          # dissolved inorganic phosphorus
-      DIN : mat/DIN          # dissolved inorganic nitrogen
-      DISi: mat/DISi         # dissolved inorganic silica
-      detC : mat/detC        # detrital carbon
-      detP : mat/detP        # detrital phosphorus
-      detN : mat/detN        # detrital nitrogen
-      detSi : mat/detSi      # detrital silica
-  diatoms2:
+      DINO3 : 16.0            # initial dissolved inorganic NO3
+      DINH4 : 16.0            # initial dissolved inorganic NH4
+      DISi : 30.0             # initial dissolved inorganic silica
+      bacC: 50.0              # initial bacterial carbon
+      bacP : 1.0              # initial bacterial phosphorus
+      bacN : 10.0             # initial bacterial nitrogen
+      #SOC : 1000.0            # initial semi-labile organic carbon
+      DOC : 2.0               # initial dissolved organic carbon
+      DOP : 2.0               # initial dissolved organic phosphorus
+      DON : 32.0              # initial dissolved organic nitrogen
+      det1C: 106.0             # initial detrital carbon
+      det1P : 1.0              # initial detrital phosphorus
+      det1N : 16.0             # initial detrital nitrogen
+      det2C: 106.0             # initial detrital carbon
+      det2P : 1.0              # initial detrital phosphorus
+      det2N : 16.0             # initial
+      det2Si : 15.0            # initial detrital silica
+  GPM_diatoms:
     use: .true.
     long_name: diatoms
     model: gpm/phytoplankton
@@ -104,12 +94,13 @@ instances:
       kc: 0.00453            #C-specific light ext. coefficient
       kchl: 0.023            #Chl-specific light ext. coefficient                  
       metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : 0.0                # vertical velocity (<0 for sinking)
+      w : -0.4               # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
+      frac_d2x: 0.15         # fraction of mortality channeled to fast sinking detritus
       metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
@@ -123,7 +114,8 @@ instances:
       VNmax : 1.0            # max. N uptake rate (if metIntSt=1)
       dop_allowed: .false.   #whether the DOP is available for uptake
       Kp : 0.2               # half sat. conc. for P uptake 
-      Kn : 1.5               # half sat. conc. for N uptake 
+      Kno3 : 1.5             # half sat. conc. for NO3 uptake 
+      Knh4 : 0.5             # half sat. conc. for NH4 uptake  
       metIresp : 1           # light response method. 1: monod 2: light inh. 3:tanh 4: steele62
       islope : 0.3           # initial slope (if lightresp== 1,2 & 3)  
       Iopt : 40              # optimal light intensity (if lightresp==2)
@@ -140,14 +132,86 @@ instances:
       P : 0.01               # initial phosphorus
       N : 0.16               # initial nitrogen
     coupling:
-      DIP : mat/DIP          # dissolved inorganic phosphorus
-      DIN : mat/DIN          # dissolved inorganic nitrogen
-      DISi: mat/DISi         # dissolved inorganic silica
-      detC : mat/detC        # detrital carbon
-      detP : mat/detP        # detrital phosphorus
-      detN : mat/detN        # detrital nitrogen
-      detSi : mat/detSi      # detrital silica
-  flag:
+      O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
+      DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
+      DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
+      DISi: EH_abioP/DISi         # dissolved inorganic silica
+      DISi: EH_abioP/DISi         # dissolved inorganic silica
+      DOC : EH_abioP/DOC          # pelagic dissolved organic carbon
+      DOP : EH_abioP/DOP          # pelagic dissolved organic phosphorus
+      DON : EH_abioP/DON          # pelagic dissolved organic nitrogen
+      #SOC : EH_abioP/SOC         # dissolved semi-labile organic carbon
+      det1C : EH_abioP/det1C      # detrital carbon -slow sinking
+      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking
+      det1N : EH_abioP/det1N      # detrital nitrogen -slow sinking
+      det2C : EH_abioP/det2C      # detrital carbon -fast sinking
+      det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
+      det2N : EH_abioP/det2N      # detrital nitrogen -fast sinking
+      det2Si : EH_abioP/det2Si    # detrital silica -fast sinking
+  GPM_nf:
+    use: .true.
+    long_name: nanoflagellates
+    model: gpm/phytoplankton
+    parameters: 
+      metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
+      kc: 0.00453            #C-specific light ext. coefficient
+      kchl: 0.023            #Chl-specific light ext. coefficient                  
+      metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      w : 0.0                # vertical velocity (<0 for sinking)
+      metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
+      Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
+      Tref: 10.0             # reference Temperature
+      rmd : 0.02             # linear mortality rate
+      rmdq : 0.001           # quadratic mortality rate
+      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
+      C2P: 106             # C:P ratio, if metIntSt=0
+      QPmax : 0.0115         # max. P:C ratio (if metIntSt=1)
+      QPmin : 0.00155        # min. P:C ratio (if metIntSt=1)
+      QNmax : 0.18            # max. N:C ratio (if metIntSt=1)
+      QNmin : 0.07           # min. N:C ratio (if metIntSt=1)
+      gam : 0.05             # exudation fraction of the c/n/p taken up
+      vCmax : 1.2            # max. C uptake rate (a.k.a. 'growth rate')
+      VPmax : 0.2           # max. P uptake rate (if metIntSt=1)
+      VNmax : 2.5            # max. P uptake rate (if metIntSt=1)
+      dop_allowed: .true.    #whether the DOP is available for uptake
+      Kp : 0.1               # half sat. conc. for P uptake 
+      Kno3 : 1.0             # half sat. conc. for NO3 uptake 
+      Knh4 : 0.4             # half sat. conc. for NH4 uptake 
+      metIresp : 1           # light response method. 1: monod 2: light inh. 3:tanh 4: steele62
+      islope : 0.4           # initial slope (if lightresp== 1,2 & 3)  
+      Iopt : 40              # optimal light intensity (if lightresp==2)
+      Imin : 25              # minimum light (if lightresp==4)
+      metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
+      excess: 0.5            # excess carbon assimilation fraction
+      resolve_Si: .false.     # whether to resolve Si-cycle autotrophy
+      C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
+      Ksi : 0.5              # half sat. conc. for Si lim growth (if resolve_Si: .true)
+      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
+      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
+    initialization:
+      C : 1.06               # initial carbon
+      P : 0.01               # initial phosphorus
+      N : 0.16               # initial nitrogen
+    coupling:
+      O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
+      DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
+      DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
+      DOC : EH_abioP/DOC          # pelagic dissolved organic carbon
+      DOP : EH_abioP/DOP          # pelagic dissolved organic phosphorus
+      DON : EH_abioP/DON          # pelagic dissolved organic nitrogen
+      #SOC : EH_abioP/SOC          # dissolved semi-labile organic carbon
+      det1C : EH_abioP/det1C      # detrital carbon -slow sinking
+      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking
+      det1N : EH_abioP/det1N      # detrital nitrogen -slow sinking
+      det2C : EH_abioP/det2C      # detrital carbon -fast sinking
+      det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
+      det2N : EH_abioP/det2N      # detrital nitrogen -fast sinking
+  GPM_pha:
     use: .true.
     long_name: phaeocystis
     model: gpm/phytoplankton
@@ -173,14 +237,15 @@ instances:
       vCmax : 1.0            # max. C uptake rate (a.k.a. 'growth rate')
       VPmax : 0.14           # max. P uptake rate (if metIntSt=1)
       VNmax : 2.0            # max. P uptake rate (if metIntSt=1)
-      dop_allowed: .false.   #whether the DOP is available for uptake
+      dop_allowed: .true.    #whether the DOP is available for uptake
       Kp : 0.2               # half sat. conc. for P uptake 
-      Kn : 1.5               # half sat. conc. for N uptake 
+      Kno3 : 1.5             # half sat. conc. for NO3 uptake 
+      Knh4 : 0.5             # half sat. conc. for NH4 uptake 
       metIresp : 1           # light response method. 1: monod 2: light inh. 3:tanh 4: steele62
       islope : 0.3           # initial slope (if lightresp== 1,2 & 3)  
       Iopt : 40              # optimal light intensity (if lightresp==2)
       Imin : 25              # minimum light (if lightresp==4)
-      metCexc: 1             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
+      metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       resolve_Si: .false.     # whether to resolve Si-cycle autotrophy
       C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
@@ -192,12 +257,22 @@ instances:
       P : 0.01               # initial phosphorus
       N : 0.16               # initial nitrogen
     coupling:
-      DIP : mat/DIP          # dissolved inorganic phosphorus
-      DIN : mat/DIN          # dissolved inorganic nitrogen
-      detC : mat/detC        # detrital carbon
-      detP : mat/detP        # detrital phosphorus
-      detN : mat/detN        # detrital nitrogen
-  miczoo:
+      O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
+      DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
+      DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
+      DOC : EH_abioP/DOC          # pelagic dissolved organic carbon
+      DOP : EH_abioP/DOP          # pelagic dissolved organic phosphorus
+      DON : EH_abioP/DON          # pelagic dissolved organic nitrogen
+      #SOC : EH_abioP/SOC          # dissolved semi-labile organic carbon
+      det1C : EH_abioP/det1C      # detrital carbon -slow sinking
+      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking
+      det1N : EH_abioP/det1N      # detrital nitrogen -slow sinking
+      det2C : EH_abioP/det2C      # detrital carbon -fast sinking
+      det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
+      det2N : EH_abioP/det2N      # detrital nitrogen -fast sinking
+  GPM_miczoo:
     use: .true.
     long_name: micro-zooplankton
     model: gpm/zooplankton
@@ -225,34 +300,45 @@ instances:
       asefC : 0.6          # assimilation efficiency  for ingested carbon
       asefP : .8          # assimilation efficiency  for ingested carbon
       asefN : .8          # assimilation efficiency  for ingested carbon
-      dynpref : .false.    # dynamical adjustment of preferences (fasham 1990?)
-      num_prey : 3         # number of prey targets
-      prey1pref : 0.5      # preference factor for prey1
-      prey2pref : 0.25      # preference factor for prey2
-      prey2C2Si : 5.76   #Si:C ratio of prey2
-      prey3pref : 0.25      # preference factor for prey2
+      dynpref : .true.    # dynamical adjustment of preferences (fasham 1990?)
+      num_prey : 4         # number of prey targets
+      prey1pref : 0.3      # preference factor for prey1
+      prey2pref : 0.3      # preference factor for prey2
+      prey3pref : 0.3      # preference factor for prey3
+      prey4pref : 0.1      # preference factor for prey3
     initialization:
       C : 1.0              # initial carbon
       P : 0.0117           # initial phosphorus
       N : 0.15             # initial nitrogen
     coupling:
-      DIP : mat/DIP        # dissolved inorganic phosphorus
-      DIN : mat/DIN        # dissolved inorganic nitrogen 
-      DISi : mat/DISi        # dissolved inorganic silica 
-      detC : mat/detC      # detrital carbon
-      detP : mat/detP      # detrital phosphorus
-      detN : mat/detN      # detrital nitrogen
-      detSi : mat/detSi      # detrital silica
-      prey1C : mat/detC    #C of grazing target
-      prey1P : mat/detP    #P of grazing target
-      prey1N : mat/detN    #N of grazing target
-      prey2C : diatoms2/C   #C of grazing target
-      prey2P : diatoms2/P   #P of grazing target
-      prey2N : diatoms2/N   #N of grazing target
-      prey3C : flag/C   # C of grazing target
-      prey3P : flag/P   # P of grazing target
-      prey3N : flag/N   # N of grazing target
-  meszoo:
+      O2  : EH_abioP/O2         # pelagic O2
+      DIC : EH_abioP/DIC        # dissolved inorganic carbon
+      DIP : EH_abioP/DIP        # dissolved inorganic phosphorus
+      DINH4 : EH_abioP/DINH4    # dissolved inorganic NH4 
+      DISi : EH_abioP/DISi      # dissolved inorganic silica 
+      DOC : EH_abioP/DOC        # pelagic dissolved organic carbon
+      DOP : EH_abioP/DOP        # pelagic dissolved organic phosphorus
+      DON : EH_abioP/DON        # pelagic dissolved organic nitrogen
+      det1C : EH_abioP/det1C    # detrital carbon -slow sinking
+      det1P : EH_abioP/det1P    # detrital phosphorus -slow sinking
+      det1N : EH_abioP/det1N    # detrital nitrogen -slow sinking
+      det2C : EH_abioP/det2C    # detrital carbon -fast sinking
+      det2P : EH_abioP/det2P    # detrital phosphorus -fast sinking
+      det2N : EH_abioP/det2N    # detrital nitrogen -fast sinking
+      det2Si : EH_abioP/det2Si  # detrital silica -fast sinking
+      prey1C : EH_abioP/det1C    #C of grazing target
+      prey1P : EH_abioP/det1P    #P of grazing target
+      prey1N : EH_abioP/det1N    #N of grazing target
+      prey2C : EH_abioP/bacC    #C of grazing target
+      prey2P : EH_abioP/bacP    #P of grazing target
+      prey2N : EH_abioP/bacN    #N of grazing target
+      prey3C : GPM_nf/C        # C of grazing target
+      prey3P : GPM_nf/P        # P of grazing target
+      prey3N : GPM_nf/N        # N of grazing target
+      prey4C : GPM_pha/C        # C of grazing target
+      prey4P : GPM_pha/P        # P of grazing target
+      prey4N : GPM_pha/N        # N of grazing target
+  GPM_meszoo:
     use: .true.
     long_name: meso-zooplankton
     model: gpm/zooplankton
@@ -266,7 +352,7 @@ instances:
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
-      rmdq : 0.001           # quadratic mortality rate
+      rmdq : 0.005           # quadratic mortality rate
       metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106             # C:P ratio, if metIntSt=0
@@ -291,19 +377,27 @@ instances:
       P : 0.0117           # initial phosphorus
       N : 0.15             # initial nitrogen
     coupling:
-      DIP : mat/DIP        # dissolved inorganic phosphorus
-      DIN : mat/DIN        # dissolved inorganic nitrogen 
-      DISi : mat/DISi        # dissolved inorganic silica 
-      detC : mat/detC      # detrital carbon
-      detP : mat/detP      # detrital phosphorus
-      detN : mat/detN      # detrital nitrogen
-      detSi : mat/detSi      # detrital silica
-      prey1C : diatoms2/C   #C of grazing target
-      prey1P : diatoms2/P   #P of grazing target
-      prey1N : diatoms2/N   #N of grazing target
-      prey2C : flag/C   # C of grazing target
-      prey2P : flag/P   # P of grazing target
-      prey2N : flag/N   # N of grazing target
-      prey3C : miczoo/detC    #C of grazing target
-      prey3P : miczoo/detP    #P of grazing target
-      prey3N : miczoo/detN    #N of grazing target
+      O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
+      DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4 
+      DISi : EH_abioP/DISi        # dissolved inorganic silica 
+      DOC : EH_abioP/DOC          # pelagic dissolved organic carbon
+      DOP : EH_abioP/DOP          # pelagic dissolved organic phosphorus
+      DON : EH_abioP/DON          # pelagic dissolved organic nitrogen
+      det1C : EH_abioP/det1C      # detrital carbon -slow sinking
+      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking
+      det1N : EH_abioP/det1N      # detrital nitrogen -slow sinking
+      det2C : EH_abioP/det2C      # detrital carbon -fast sinking
+      det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
+      det2N : EH_abioP/det2N      # detrital nitrogen -fast sinking
+      det2Si : EH_abioP/det2Si    # detrital silica -fast sinking
+      prey1C : GPM_diatoms/C       #C of grazing target
+      prey1P : GPM_diatoms/P       #P of grazing target
+      prey1N : GPM_diatoms/N       #N of grazing target
+      prey2C : GPM_nf/C          # C of grazing target
+      prey2P : GPM_nf/P          # P of grazing target
+      prey2N : GPM_nf/N          # N of grazing target
+      prey3C : GPM_miczoo/C     #C of grazing target
+      prey3P : GPM_miczoo/P     #P of grazing target
+      prey3N : GPM_miczoo/N     #N of grazing target

@@ -6,9 +6,7 @@ add_library(fabm_models_gpm OBJECT
             ${CMAKE_CURRENT_BINARY_DIR}/version.F90
             common.F90
             phytoplankton.F90
-            zooplankton.F90
-            abio_pel.F90
-            abio_sed.F90           
+            zooplankton.F90     
            )
 
 add_dependencies(fabm_models_gpm fabm_base)

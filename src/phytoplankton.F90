@@ -8,6 +8,11 @@
 ! !INTERFACE:
    module gpm_phytoplankton
 !
+!TODO:
+! - diagnostic N and P even with constant stoichiometry (?)
+! - self%metCexc -> general switch (aux)
+! - self%resolve_Si -> general switch (aux)
+!
 ! !DESCRIPTION:
 !
 ! !USES:
@@ -23,7 +28,7 @@
 !
 ! !PUBLIC DERIVED TYPES:
    
-   type, extends(type_EHaut),public :: type_gpm_phytoplankton
+   type, extends(type_GPMaut),public :: type_gpm_phytoplankton
       contains
       procedure  :: initialize
       procedure  :: do
@@ -79,13 +84,14 @@
    
    call self%get_parameter(self%metvel,   'metvel',   '-',  'method for calculating settling vel.',  default=0)
    call self%get_parameter(self%w,       'w',        'm/d',        'vertical velocity (<0 for sinking)',     default=0.0_rk, scale_factor=d_per_s)  
-
+   
    call self%get_parameter(self%metTresp, 'metTresp',  '-',   'method to calcualte T resp.',   default=1)
    call self%get_parameter(self%Q10,      'Q10',     '-',     'Q10 for kinetic rates fr',       default=1.5_rk)
    call self%get_parameter(self%Tref,     'Tref',    'celcius',    'reference temperature for aut. proc.',default=10.0_rk)
 
    call self%get_parameter(self%rmd,     'rmd',     '/d',      'linear mortality rate',                  default=0.035_rk,  scale_factor=d_per_s)
    call self%get_parameter(self%rmdq,    'rmdq',    'm^3/mmolC/d', 'quadratic mortality rate',               default=0.01_rk, scale_factor=d_per_s) ! 0.01
+   call self%get_parameter(self%frac_d2x, 'frac_d2x',     '-',        'fraction of fast sinking detritus in phyto mortality',     default=0.15_rk)
 
    call self%get_parameter(self%metIntSt, 'metIntSt', '-', 'method for representing the internal states', default=0)
    call self%get_parameter(self%C2N,     'C2N',     'molC/molN',   'molar C:N ratio',  default=6.625_rk) !rf: 6.625
@@ -102,9 +108,8 @@
    call self%get_parameter(self%VNmax,    'VNmax',     'mmolN/mmolC/d','Max. nitrogen uptake rate',          default=14.0_rk, scale_factor=d_per_s)
    call self%get_parameter(self%dop_allowed,   'dop_allowed',   '-',      'whether to DOP can be used instead of DIP',          default=.false.)
    call self%get_parameter(self%Kp,       'Kp',        'mmolP/m^3',   'half-saturation P concentration',  default=0.05_rk)
-   call self%get_parameter(self%Kn,       'Kn',        'mmolN/m^3',   'half-saturation N concentration',  default=0.5_rk)
-   !call self%get_parameter(self%Kn,       'Knh4',        'mmolN/m^3',   'half-saturation ammonium concentration',  default=4.2_rk)
-   !call self%get_parameter(self%Kn,       'Kno3',        'mmolN/m^3',   'half-saturation nitrate concentration',  default=4.2_rk)
+   call self%get_parameter(self%Kno3,     'Knh4',        'mmolN/m^3',   'half-saturation ammonium concentration',  default=4.2_rk)
+   call self%get_parameter(self%Knh4,     'Kno3',        'mmolN/m^3',   'half-saturation nitrate concentration',  default=4.2_rk)
    
    call self%get_parameter(self%metIresp,'metIresp', '-',         'light response',                          default=1)
    call self%get_parameter(self%islope,   'islope',    'mmolC/m^2/W',  'slope of the P-I curve',                  default=0.05_rk) !when metIresp=1 & 3
@@ -127,7 +132,7 @@
    ! Register state variables
    call self%register_state_variable(self%id_boundC,'C','mmolC/m^3','bound carbon', & 
                                     minimum=_ZERO_)
-
+   call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_boundC)
    if (self%metIntSt .eq. 0) then
      !call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
      !                               minimum=_ZERO_)
@@ -155,19 +160,32 @@
      !call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_phyC,scale_factor=1./self%C2Ccal)
    !end if
    
-   ! linking to DIM and POM pools are required in any case
+   ! linking to DIM and POM pools
    !C
-   call self%register_state_dependency(self%id_detC,'detC')
+   call self%register_state_dependency(self%id_DIC,'DIC')
+   call self%register_state_dependency(self%id_DOC,'DOC')
+   if (self%metCexc .ne. 0) then
+     call self%register_state_dependency(self%id_SOC,'SOC')
+   end if
+   call self%register_state_dependency(self%id_det1C,'det1C')
+   call self%register_state_dependency(self%id_det2C,'det2C')
    !P
    call self%register_state_dependency(self%id_DIP,'DIP')
-   call self%register_state_dependency(self%id_detP,'detP')
+   call self%register_state_dependency(self%id_DOP,'DOP')
+   call self%register_state_dependency(self%id_det1P,'det1P')
+   call self%register_state_dependency(self%id_det2P,'det2P')
    !N
-   call self%register_state_dependency(self%id_DIN,'DIN')
-   call self%register_state_dependency(self%id_detN,'detN')
+   call self%register_state_dependency(self%id_DINO3,'DINO3')
+   call self%register_state_dependency(self%id_DINH4,'DINH4')
+   call self%register_state_dependency(self%id_DON,'DON')
+   call self%register_state_dependency(self%id_det1N,'det1N')
+   call self%register_state_dependency(self%id_det2N,'det2N')
+   !O2
+   call self%register_state_variable(self%id_O2,'O2','mmol O2/m^3','O2 in water')
    !Si
    if (self%resolve_Si) then
      call self%register_state_dependency(self%id_DISi,'DISi')
-     call self%register_state_dependency(self%id_detSi,'detSi')
+     call self%register_state_dependency(self%id_det2Si,'det2Si')
    end if
    !calC
    !if (self%resolve_calC) then
@@ -224,7 +242,9 @@
                                         output=output_time_step_averaged)                                          
    call self%register_diagnostic_variable(self%id_Pgain_A,'PgainA','/d', 'sp. P gain rate by autotrophy',   &
                                         output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_Ngain_A,'NgainA','/d', 'sp. N gain rate by autotrophy',   &
+   call self%register_diagnostic_variable(self%id_NO3gain_A,'NO3gainA','/d', 'sp. N gain rate by autotrophy',   &
+                                        output=output_time_step_averaged)
+   call self%register_diagnostic_variable(self%id_NH4gain_A,'NH4gainA','/d', 'sp. N gain rate by autotrophy',   &
                                         output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_exudsoc,'exudsoc','mmolC/m^3/d', ' bulk C exudation rate',   &
                                            output=output_time_step_averaged)  
@@ -284,12 +304,12 @@
    _DECLARE_ARGUMENTS_DO_
 !
 ! !LOCAL VARIABLES:
-   logical                    :: debw!,dop_uptake
+   logical                    :: debw
    real(rk)                   :: fT,exud_soc
    type (type_env)            :: env
-   type (type_elms)           :: Aupt,Alim,exud,mort
-   type (type_dim)            :: di
-   type (org_autotrophic)    :: org !quantities of the organismal system being modelled (state and derived values) 
+   type (type_elms)           :: dom,Alim,exud,mort
+   type (type_dim)            :: di,Aupt
+   type (org_autotrophic)     :: org !quantities of the organismal system being modelled (state and derived values) 
    
 !EOP
 !-----------------------------------------------------------------------
@@ -301,6 +321,13 @@
    
    ! Enter spatial loops (if any)
    _FABM_LOOP_BEGIN_
+   
+   !Reset the rates
+   !General
+   mort%C=0.0; mort%P=0.0; mort%N=0.0; mort%Si=0.0
+   !Autotrophy:
+   Aupt%C=0.0; Aupt%P=0.0; Aupt%NH4=0.0; Aupt%NO3=0.0; Aupt%Si=0.0
+   exud%C=0.0; exud%P=0.0; exud%N=0.0; exud%Si=0.0; exud_soc=0.0
    
    !-------------------------------------------------------------------------
    !PREPARE: retrieve variables
@@ -322,15 +349,13 @@
    !if (debw) write(*,'(1A)',advance='no') ''
    
    ! !Retrieve state variables
-   ! _GET_(self%id_DIC,DIC) ?
-   !_GET_(self%id_DIP,di%C)
+   !_GET_(self%id_DIC,di%C) !?
    _GET_(self%id_DIP,di%P)
-   !if (self%dop_allowed) then
-     !_GET_(self%id_DOP,dom%P)
-   !end if
-   _GET_(self%id_DIN,di%N)
-   !_GET_(self%id_DIN,DINO3) ! nitrate
-   !_GET_(self%id_DIN,DINH4) ! ammonium
+   if (self%dop_allowed) then
+     _GET_(self%id_DOP,dom%P)
+   end if
+   _GET_(self%id_DINO3,di%NO3) ! nitrate
+   _GET_(self%id_DINH4,di%NH4) ! ammonium
    if (self%resolve_Si) then
      _GET_(self%id_DISi,di%Si)
    end if
@@ -350,26 +375,26 @@
    !START OF CALCULATIONS: no other calculation outside this box
    !
    !Temperature function
-   fT = get_fT(self%type_EHbase,env%temp)
+   fT = get_fT(self%type_GPMbase,env%temp)
    
    !Nutrient quotas, limitation and uptake
    !todo: split the get_nutQ 
-   call org%get_nut_QLU(self%type_EHaut,fT,di,Alim,Aupt)
+   call org%get_nut_QLU(self%type_GPMaut,fT,di,dom,Alim,Aupt)
    !write(*,*)'N: lim%P,lim%N,upt%P,upt%N:',Alim%P,Alim%N !,Aupt%P*s2d,Aupt%N*s2d
    
    !Light limitation
    ! chl (potentially needed to calculate light limitation)
-   call org%get_chl(self%type_EHaut,env)
+   call org%get_chl(self%type_GPMaut,env)
    ! light limitation factor   
-   call org%get_fI(self%type_EHaut,fT,env)
+   call org%get_fI(self%type_GPMaut,fT,env)
    !if (env%par .gt. 0.0) write(*,*)'vc,is,io,im,fT,p',vC_atQmax,self%islope,self%Iopt,self%Imin,fT,env%par
    
    !Primary production (upt%C) and  uptake terms for elements resolved as fixed stoichiometry
-   call org%get_PP_upt4fs(self%type_EHaut,fT,Aupt,exud_soc)
+   call org%get_PP_upt4fs(self%type_GPMaut,fT,Aupt,exud_soc)
    
    ! LOSSES
-   call org%get_losses_exud(self%type_EHaut,Aupt,exud)
-   call org%get_losses_mort_aut(self%type_EHaut,fT,mort)
+   call org%get_losses_exud(self%type_GPMaut,Aupt,exud)
+   call org%get_losses_mort_aut(self%type_GPMaut,fT,mort)
    !
    !END OF CALCULATIONS: no other calculation outside this box
    !-------------------------------------------------------------------------
@@ -385,22 +410,23 @@
    _SET_ODE_(self%id_boundC, Aupt%C - exud%C - mort%C - exud_soc)
    if ((self%metIntSt .eq. 1)) then ! .or. (self%metIntSt .eq. 0)  !(for debugging purposes)
      _SET_ODE_(self%id_boundP, Aupt%P - exud%P - mort%P) 
-     _SET_ODE_(self%id_boundN, Aupt%N - exud%N - mort%N)
+     _SET_ODE_(self%id_boundN, Aupt%NO3+Aupt%NH4 - exud%N - mort%N)
    end if
    
    ! Uptake Targets
    !C
-   !_SET_ODE_(self%id_DIC,-Aupt%C*org%C ) !todo
+   _SET_ODE_(self%id_DIC,-Aupt%C )
+   !O2
+   _SET_ODE_(self%id_O2,Aupt%C)
    !P
-   !if (dop_uptake)
-     !_SET_ODE_(self%id_DOP,-Aupt%P*org%C) !todo
-   !else
+   if (org%dop_uptake) then
+     _SET_ODE_(self%id_DOP,-Aupt%P)
+   else
      _SET_ODE_(self%id_DIP,-Aupt%P) 
-   !end if
+   end if
    !N
-   _SET_ODE_(self%id_DIN, -Aupt%N ) 
-   !_SET_ODE_(self%id_DINO3,-Aupt%N*lim_no3/Alim%N*(org%C+self%m0) )
-   !_SET_ODE_(self%id_DINO3,-Aupt%N*lim_nh4/Alim%N*(org%C+self%m0) ) 
+   _SET_ODE_(self%id_DINO3,-Aupt%NO3) !*org%lim_no3/Alim%N)
+   _SET_ODE_(self%id_DINH4,-Aupt%NH4) !*org%lim_nh4/Alim%N) 
    !Si
    if (self%resolve_Si) then
      _SET_ODE_(self%id_DISi,-Aupt%Si)
@@ -417,21 +443,31 @@
    
    ! Recycling to Nutrient Pools
    !C
-   !_SET_ODE_(self%id_DIC,exud%C) !todo: DOC
-   _SET_ODE_(self%id_detC,mort%C) !todo: fractionate into slow and fast
-   !soc: todo 
-   !_SET_ODE_(self%id_SOC,exud%C) !pic_soc
+   _SET_ODE_(self%id_DOC,exud%C)
+   _SET_ODE_(self%id_det1C,mort%C*(1.0-self%frac_d2x))
+   _SET_ODE_(self%id_det2C,mort%C*self%frac_d2x)
+   if (self%metCexc .ne. 0) then
+     _SET_ODE_(self%id_SOC,exud_soc)
+   end if
    !P
-   _SET_ODE_(self%id_DIP,exud%P) !todo: DOP
-   _SET_ODE_(self%id_detP,mort%P)  !todo: fractionate into slow and fast
+   _SET_ODE_(self%id_DOP,exud%P)
+   _SET_ODE_(self%id_det1P,mort%P*(1.0-self%frac_d2x))
+   _SET_ODE_(self%id_det2P,mort%P*self%frac_d2x)
    !N
-   _SET_ODE_(self%id_DIN, exud%N) !todo: DON
-   _SET_ODE_(self%id_detN, mort%N) !todo: fractionate into slow and fast
+   _SET_ODE_(self%id_DON, exud%N)
+   _SET_ODE_(self%id_det1N, mort%N*(1.0-self%frac_d2x))
+   _SET_ODE_(self%id_det2N, mort%N*self%frac_d2x)
    !Si
    if (self%resolve_Si) then
      _SET_ODE_(self%id_dISi,exud%Si)
-     _SET_ODE_(self%id_detSi,mort%Si)
+     _SET_ODE_(self%id_det2Si,mort%Si)
      !if (debw) write(*,'(2A, 2F14.10)') self%name, 'IngSiunas', IngSiunas
+     !in EH, L1473-1477: todo:ask
+     !f_FromTo(i_p1s_d2s)=(f_FromTo(i_p1c_d1c)+f_FromTo(i_p1c_d2c))/rcs
+     !dia_adds_loss=(f_FromTo(i_p1c_doc)+f_FromTo(i_p1c_z1c)+f_FromTo(i_p1c_z2c))/rcs
+     !dia_ups=f_FromTo(i_n5s_p1s)
+     !f_FromTo(i_n5s_p1s)=max(0.0,dia_ups-dia_adds_loss) !MK verstehe ich nicht !JP Vermindere n5s Aufnahme
+     !f_FromTo(i_p1s_d2s)=f_FromTo(i_p1s_d2s)+max(0.0,dia_adds_loss-dia_ups)
    end if
    !if (self%resolve_carb) then
      !if (self%resolve_cal) then
@@ -470,8 +506,11 @@
     _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
     _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
     _SET_DIAGNOSTIC_(self%id_Pgain_A, Aupt%P*s2d)
-    _SET_DIAGNOSTIC_(self%id_Ngain_A, Aupt%N*s2d)
-    _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
+    _SET_DIAGNOSTIC_(self%id_NO3gain_A, Aupt%NO3*s2d)
+    _SET_DIAGNOSTIC_(self%id_NH4gain_A, Aupt%NH4*s2d)
+    if (self%metCexc .ne. 0) then
+      _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
+    end if
     if (self%resolve_Si) then
       _SET_DIAGNOSTIC_(self%id_Silim,Alim%Si)
     end if

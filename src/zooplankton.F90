@@ -5,6 +5,11 @@
 !
 ! !MODULE: gpm_zooplankton --- generic zooplankton model
 !
+!TODO:
+! - check if zooplankton can access the diagnotic variables of other modules
+! - feed on constant stoichiometry prey via C2N and C2P parameters (?)
+! - self%resolve_Si -> general switch (aux)
+!
 ! !INTERFACE:
    module gpm_zooplankton
 !
@@ -23,7 +28,7 @@
 !
 ! !PUBLIC DERIVED TYPES:
    
-   type, extends(type_EHmixo),public :: type_gpm_zooplankton
+   type, extends(type_GPMmixo),public :: type_gpm_zooplankton
       contains
       
       procedure  :: initialize
@@ -87,6 +92,7 @@
    
    call self%get_parameter(self%rmd,     'rmd',     '/d',       'linear mortality rate -min',                  default=0.05_rk,  scale_factor=d_per_s)
    call self%get_parameter(self%rmdq,    'rmdq',    '/d',       'quadratic mortality rate',               default=0.001_rk, scale_factor=d_per_s)
+   call self%get_parameter(self%frac_d2x, 'frac_d2x',     '-',        'fraction of fast sinking detritus in zoo mortality/excretion',     default=0.15_rk)
    
    call self%get_parameter(self%metIntSt, 'metIntSt', '-', 'method for representing the internal states', default=0)
    call self%get_parameter(self%C2N,     'C2N',     'molC/molN',   'molar C:N ratio',  default=6.625_rk) !rf: 6.625
@@ -110,6 +116,7 @@
    ! Register state variables
    call self%register_state_variable(self%id_boundC,'C','mmolC/m^3','bound carbon', & 
                                     minimum=_ZERO_, specific_light_extinction=self%kc,vertical_movement=self%w*d_per_s)
+   call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_boundC)
    
    if (self%metIntSt .eq. 0) then
      !call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
@@ -156,17 +163,26 @@
    
    ! linking to DIM and POM pools are required for recycling
    !C
-   call self%register_state_dependency(self%id_detC,'detC')
+   call self%register_state_dependency(self%id_DIC,'DIC')
+   call self%register_state_dependency(self%id_DOC,'DOC')
+   call self%register_state_dependency(self%id_det1C,'det1C')
+   call self%register_state_dependency(self%id_det2C,'det2C')
    !P
    call self%register_state_dependency(self%id_DIP,'DIP')
-   call self%register_state_dependency(self%id_detP,'detP')
+   call self%register_state_dependency(self%id_DOP,'DOP')
+   call self%register_state_dependency(self%id_det1P,'det1P')
+   call self%register_state_dependency(self%id_det2P,'det2P')
    !N
-   call self%register_state_dependency(self%id_DIN,'DIN')
-   call self%register_state_dependency(self%id_detN,'detN')
+   call self%register_state_dependency(self%id_DINH4,'DINH4')
+   call self%register_state_dependency(self%id_DON,'DON')
+   call self%register_state_dependency(self%id_det1N,'det1N')
+   call self%register_state_dependency(self%id_det2N,'det2N')
+   !O2
+   call self%register_state_variable(self%id_O2,'O2','mmol O2/m^3','O2 in water')
    !Si
    if (self%resolve_Si) then
      call self%register_state_dependency(self%id_DISi,'DISi')
-     call self%register_state_dependency(self%id_detSi,'detSi')
+     call self%register_state_dependency(self%id_det2Si,'det2Si')
    end if
    
    !Diagnostics
@@ -197,6 +213,8 @@
                                           output=output_time_step_averaged)
    end do
    
+   call self%register_diagnostic_variable(self%id_respC,'resp_C','mmolC/m^3/d', 'respiration rate', &
+                                          output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_IngC,'Ing_C','molC/molC/d', 'total sp. C grazing rate', &
                                           output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_IngunasC,'Ingunas_C','/d',  'unassimilated fraction of sp. ingestion of C', &
@@ -300,11 +318,14 @@
    ! Enter spatial loops (if any)
    _FABM_LOOP_BEGIN_
    
-   !reset the rates
-   Ing%C=0.0;Ingunas%C=0.0;Ingas%C=0.0;
-   Ing%P=0.0;Ingunas%P=0.0;Ingas%P=0.0;
-   Ing%N=0.0;Ingunas%N=0.0;Ingas%N=0.0;
-   Ing%Si=0.0;Ingunas%Si=0.0;
+   !Reset the rates
+   !General
+   mort%C=0.0; mort%P=0.0; mort%N=0.0; mort%Si=0.0
+   !Heterotrophy:
+   Ing%C=0.0; Ing%P=0.0; Ing%N=0.0; Ing%Si=0.0
+   Ingas%C=0.0; Ingas%P=0.0; Ingas%N=0.0; Ingas%Si=0.0
+   Ingunas%C=0.0; Ingunas%P=0.0; Ingunas%N=0.0; Ingunas%Si=0.0
+   excr%C=0.0; excr%P=0.0; excr%N=0.0; excr%Si=0.0
    
    !-------------------------------------------------------------------------
    !PREPARE: retrieve variables
@@ -385,21 +406,21 @@
    !START OF CALCULATIONS: no other calculation outside this box
    !
    !Temperature function
-   fT = get_fT(self%type_EHbase,env%temp)
+   fT = get_fT(self%type_GPMbase,env%temp)
    
    !Nutrient quotas
-   call org%get_nut_Q(self%type_EHbase)
+   call org%get_nut_Q(self%type_GPMbase)
    
    !calculate grazing rate for each prey unit and total grazing 
-   call org%get_GronMultiPrey(self%type_EHmixo,self%prpar,fT,prdat,Ing)
+   call org%get_GronMultiPrey(self%type_GPMmixo,self%prpar,fT,prdat,Ing)
    !this gives grazrateX [molXprey/molXpred/d]
      
    !adjust the assimilation efficiencies to maintain  Qmin<Q<Qmax
-   call org%get_adjasef(self%type_EHmixo,Ing,asef,Ingas,Ingunas)
+   call org%get_adjasef(self%type_GPMmixo,Ing,asef,Ingas,Ingunas)
    
    ! LOSSES
-   call org%get_losses_excr(self%type_EHmixo,fT,excr)
-   call org%get_losses_mort_het(self%type_EHmixo,fT,mort)   
+   call org%get_losses_excr(self%type_GPMmixo,fT,excr)
+   call org%get_losses_mort_het(self%type_GPMmixo,fT,mort)   
    !
    !END OF CALCULATIONS: no other calculation outside this box
    !-------------------------------------------------------------------------
@@ -411,6 +432,8 @@
    ! SET RHS 
    !C
    _SET_ODE_(self%id_boundC, Ingas%C - excr%C - mort%C)
+   !O2
+   _SET_ODE_(self%id_O2,-excr%C)
    !P
    if (self%metIntSt .eq. 1) then
      _SET_ODE_(self%id_boundP, Ingas%P - excr%P - mort%P) 
@@ -432,24 +455,26 @@
    
    !recycling to nutrient pools
    !C
-   _SET_ODE_(self%id_detC,mort%C)
-   _SET_ODE_(self%id_detC,Ingunas%C*self%unas_detfrac)
+   _SET_ODE_(self%id_DIC,excr%C)
+   _SET_ODE_(self%id_DOC,Ingunas%C*(1.-self%unas_detfrac))
+   _SET_ODE_(self%id_det1C,(Ingunas%C*self%unas_detfrac+mort%C)*(1.-self%frac_d2x))
+   _SET_ODE_(self%id_det2C,(Ingunas%C*self%unas_detfrac+mort%C)*self%frac_d2x)
    !P
    _SET_ODE_(self%id_DIP,excr%P)
-   _SET_ODE_(self%id_detP,mort%P)
-   _SET_ODE_(self%id_detP,Ingunas%P*self%unas_detfrac) 
-   _SET_ODE_(self%id_DIP,Ingunas%P*(1.-self%unas_detfrac)) 
-     !if (debw) write(*,'(A, 3F14.10)') 'rmd+rmdq,Ingunas%C,Ingunas%P', rmd+rmdq,Ingunas%C,Ingunas%P
+   _SET_ODE_(self%id_DOP, Ingunas%P*(1.-self%unas_detfrac)) 
+   _SET_ODE_(self%id_det1P,(Ingunas%P*self%unas_detfrac+mort%P)*(1.-self%frac_d2x))
+   _SET_ODE_(self%id_det2P,(Ingunas%P*self%unas_detfrac+mort%P)*self%frac_d2x)
+   !if (debw) write(*,'(A, 3F14.10)') 'rmd+rmdq,Ingunas%C,Ingunas%P', rmd+rmdq,Ingunas%C,Ingunas%P
    !N
-   _SET_ODE_(self%id_DIN,excr%N)
-   _SET_ODE_(self%id_detN,mort%P)
-   _SET_ODE_(self%id_detN,Ingunas%N*self%unas_detfrac) 
-   _SET_ODE_(self%id_DIN,Ingunas%N*(1.-self%unas_detfrac)) 
-     !if (debw) write(*,'(2A, 2F14.10)') self%name, 'Ingunas%P', Ingunas%P*s2d
+   _SET_ODE_(self%id_DINH4,excr%N)
+   _SET_ODE_(self%id_DON,Ingunas%N*(1.-self%unas_detfrac))
+   _SET_ODE_(self%id_det1N,(Ingunas%N*self%unas_detfrac+mort%N)*(1.-self%frac_d2x))
+   _SET_ODE_(self%id_det2N,(Ingunas%N*self%unas_detfrac+mort%N)*self%frac_d2x)
+   !if (debw) write(*,'(2A, 2F14.10)') self%name, 'Ingunas%P', Ingunas%P*s2d
    !Si
    if (self%resolve_Si) then
-     _SET_ODE_(self%id_detSi,Ingunas%Si*self%unas_detfrac)
      _SET_ODE_(self%id_DISi,Ingunas%Si*(1.-self%unas_detfrac))
+     _SET_ODE_(self%id_det2Si,Ingunas%Si*self%unas_detfrac)
      !if (debw) write(*,'(2A, 2F14.10)') self%name, 'Ingunas%Si', Ingunas%Si
    end if
    
@@ -474,6 +499,7 @@
    DO i=1,self%num_prey
     _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,prdat%rpref(i))	
    END DO
+   _SET_DIAGNOSTIC_(self%id_respC,excr%C*s2d)
    _SET_DIAGNOSTIC_(self%id_IngC,Ing%C*s2d)
    _SET_DIAGNOSTIC_(self%id_IngasC, Ingas%C*s2d)
    _SET_DIAGNOSTIC_(self%id_IngunasC, Ingunas%C*s2d)

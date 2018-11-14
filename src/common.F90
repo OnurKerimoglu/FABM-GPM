@@ -34,9 +34,13 @@ module gpm_common
    end type
    
    ! dissolved inorganic material species resolved
-   type, extends(type_elms),public :: type_dim 
+   type, public :: type_dim 
+     real(rk) :: C
+     real(rk) :: P
      real(rk) :: NO3
      real(rk) :: NH4
+     real(rk) :: Si
+     !real(rk) :: Ccal
    end type
    
    ! data and procedures relevant for the nutrition status of organisms 
@@ -45,8 +49,15 @@ module gpm_common
      real(rk) :: QN
      real(rk) :: QPr
      real(rk) :: QNr
+     real(rk) :: lim_dip
+     real(rk) :: lim_dop
+     real(rk) :: lim_p
+     real(rk) :: lim_no3
+     real(rk) :: lim_nh4
+     real(rk) :: lim_n
      real(rk) :: limNP
      real(rk) :: nutlim
+     logical  :: dop_uptake
      contains
      procedure :: get_nut_Q
      procedure :: get_nut_QLU
@@ -106,7 +117,7 @@ module gpm_common
    end type
    
    ! a base model type to be potentially used for all 'life' modules
-   type, extends(type_base_model),public :: type_EHbase
+   type, extends(type_base_model),public :: type_GPMbase
      !state vars
      type (type_state_variable_id)      :: id_boundC,id_boundP,id_boundN
 
@@ -120,7 +131,7 @@ module gpm_common
      integer  :: metvel,metext,metIntSt,metTresp
      real(rk) :: kc,w,Q10,Tref
      real(rk) :: C2N,C2P
-     real(rk) :: rmd,rmdq
+     real(rk) :: rmd,rmdq,frac_d2x
      real(rk) :: QPmax,QPmin,QNmax,QNmin
      
    end type
@@ -128,22 +139,23 @@ module gpm_common
    !an intermediate 'life' structure, e.g., for uptake and recyling?
 
    ! a fabm-type to be used for describing potentially autotrophic organisms
-   type, extends(type_EHbase),public :: type_EHaut
+   type, extends(type_GPMbase),public :: type_GPMaut
      !potentially shared
      !  Variable identifiers
-     type (type_state_variable_id)      :: id_DIP,id_DIN,id_DISi !,id_DIC,!id_DINO3, id_DINH4
-     !type (type_state_variable_id)      :: id_DOC,id_DOP,id_DON,id_SOC
-     type (type_state_variable_id)      :: id_detC,id_detP,id_detN,id_detSi
-     !type (type_state_variable_id)      :: id_det1C,id_det1P,id_det1N
-     !type (type_state_variable_id)      :: id_det2C,id_det2P,id_det2N, !id_det2S, id_det2k
-
+     type (type_state_variable_id)      :: id_DIC,id_DIP,id_DINO3,id_DINH4,id_DISi
+     type (type_state_variable_id)      :: id_SOC,id_DOC,id_DOP,id_DON
+     type (type_state_variable_id)      :: id_det1C,id_det1P,id_det1N
+     type (type_state_variable_id)      :: id_det2C,id_det2P,id_det2N,id_det2Si !, id_det2k
+     type (type_state_variable_id)      :: id_O2
+     
      !autotrophs
      !diagnostics
      type (type_diagnostic_variable_id) :: id_Closs,id_Ploss,id_Nloss
      type (type_diagnostic_variable_id) :: id_dPAR,id_NPPR,id_exudsoc
-     type (type_diagnostic_variable_id) :: id_Cgain_A,id_Pgain_A,id_Ngain_A
+     type (type_diagnostic_variable_id) :: id_Cgain_A,id_Pgain_A,id_NO3gain_A,id_NH4gain_A
      type (type_diagnostic_variable_id) :: id_MuClim_A,id_Plim,id_Nlim,id_Silim
      type (type_diagnostic_variable_id) :: id_Chl,id_QChl
+     !type (type_diagnostic_variable_id) :: id_pc_o2o = pc_dic = CGain_A
      type (type_dependency_id)          :: id_par,id_Chl_dep
      type (type_horizontal_dependency_id)::id_I_0
 
@@ -152,7 +164,7 @@ module gpm_common
      integer  :: metchl,metIresp,metCexc
      real(rk) :: kchl,gam
      real(rk) :: C2Si,C2Chl !,C2Ccal
-     real(rk) :: vCmax,excess,Kp,Kn,Ksi
+     real(rk) :: vCmax,excess,Kp,Kno3,Knh4,Ksi
      real(rk) :: islope,Iopt,Imin
      real(rk) :: VPmax,VNmax
      !real(rk) :: c_max,rccalc_min,xkc_i,xkk_i,detach_min
@@ -160,13 +172,15 @@ module gpm_common
    
    ! a fabm-type to be used for describing potentially mixotrophic organisms. 
    ! it extends from the type_autopar, and adds heterotrophic parameters
-   type, extends(type_EHaut),public :: type_EHmixo
+   type, extends(type_GPMaut),public :: type_GPMmixo
       !diagnostics
       type (type_diagnostic_variable_id) :: id_IngasC,id_IngasP,id_IngasN
       type (type_diagnostic_variable_id) :: id_IngC,id_IngP,id_IngN
       type (type_diagnostic_variable_id) :: id_asefC,id_asefP,id_asefN
       type (type_diagnostic_variable_id) :: id_IngunasC,id_IngunasP,id_IngunasN,id_IngunasSi
-
+      type (type_diagnostic_variable_id) :: id_respC!,id_excrP,id_excrN
+      !type (type_diagnostic_variable_id) :: id_o2o_zc = zc_dic= respC
+      
 !     Model parameters
       !heteroptrophic
       logical  :: dynpref !,resolve_Si
@@ -200,7 +214,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_heterotrophic)     :: org
-   type (type_EHmixo),intent(in):: mpar 
+   type (type_GPMmixo),intent(in):: mpar 
    real(rk),intent(in)          :: fT
    type(prey_pars),intent(in)   :: prpar(:)
    type(prey_data)              :: prdat
@@ -244,7 +258,7 @@ module gpm_common
       !if the preferences are specified to change dynamically (e.g., as in Fasham 1990)
       if (mpar%dynpref) then 
         prdat%rpref(i)=prdat%corpref(i)*prdat%C(i)/org%ftotC
-        !write(*,'(A,I1,A,3F8.4)'),' '//trim(EHpl%name)//' prey#',i,' corpref,C/totC,rpref:',prdat%corpref(i),prdat%C(i)/ftotC,prdat%rpref(i)
+        !write(*,'(A,I1,A,3F8.4)'),' '//trim(GPMpl%name)//' prey#',i,' corpref,C/totC,rpref:',prdat%corpref(i),prdat%C(i)/ftotC,prdat%rpref(i)
       else
         prdat%rpref(i)=prdat%corpref(i)
       end if
@@ -264,10 +278,10 @@ module gpm_common
       
       !write(*,*),' '//trim(mpar%name)//' prey#',i,'grC,prC,pref,ftotC',prdat%grC(i),prdat%C(i),prdat%rpref(i),ftotC
       
-      !write(*,*),' '//trim(EHpl%name)//' prey#',i,'grC,grP,grN',prdat%grC(i),prdat%grP(i),prdat%grN(i)
+      !write(*,*),' '//trim(GPMpl%name)//' prey#',i,'grC,grP,grN',prdat%grC(i),prdat%grP(i),prdat%grN(i)
    END DO
    
-   !write(*,'(A, 2F13.10)'),' '//trim(EHpl%name)//' grSi:',prdat%grSi  
+   !write(*,'(A, 2F13.10)'),' '//trim(GPMpl%name)//' grSi:',prdat%grSi  
    
    !calculate the ingestion rates (prdat%X*(1-fA))
    Ing%C=sum(prdat%grC)  !molCprey/molCpred/d
@@ -297,7 +311,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_heterotrophic),intent(in) :: org
-   !type (type_EHmixo),intent(in) :: mpar
+   !type (type_GPMmixo),intent(in) :: mpar
    real(rk), intent(in)          :: food,pref,Kzeff,foodtot!,!KzFact
 !
 !EOP
@@ -326,7 +340,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_heterotrophic)     :: org
-   type (type_EHmixo),intent(in) :: mpar 
+   type (type_GPMmixo),intent(in) :: mpar 
    type(prey_data)              :: prdat
    type (type_elms)             :: Ing,asef,Ingas,Ingunas
 !  !LOCAL VARIABLES
@@ -404,7 +418,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class (org_basic)        :: org
-   type (type_EHbase),intent(in) :: bpar
+   type (type_GPMbase),intent(in) :: bpar
 !
 !EOP
 !-----------------------------------------------------------------------
@@ -446,7 +460,7 @@ module gpm_common
 ! !IROUTINE: get nutrient Quotas, Limitations and Uptake rates
 !
 ! !INTERFACE:
-   subroutine get_nut_QLU(org,apar,fT,di,lim,upt)
+   subroutine get_nut_QLU(org,apar,fT,di,dom,lim,upt)
 !
 ! !DESCRIPTION:
 ! Here, nutrient limited phytoplankton growth is formulated
@@ -456,19 +470,50 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class (org_basic)        :: org
-   type (type_EHaut),intent(in) :: apar
+   type (type_GPMaut),intent(in) :: apar
    real(rk),intent(in)           :: fT
    type(type_dim),intent(in)     :: di
-   type (type_elms)              :: lim,upt
+   type (type_elms)              :: dom,lim
+   type(type_dim)                :: upt
+!  !LOCAL VARIABLES
+   real(rk)                      :: mno3,mnh4
 !
 !EOP
 !-----------------------------------------------------------------------
 !BOC
+   !intermediate quantities required by multiple approaches
    
+   !N limitation: no3,nh4
+   !when NO3 and NH3 are not seperately resolved
+   !org%lim_N = di%N/(di%N+apar%Kn)
+   !when NO3 and NH3 are resolved
+   mno3=di%NO3/apar%kno3
+   mnh4=di%NH4/apar%knh4
+   org%lim_no3= mno3 / (1+mno3+mnh4) !in EH, Q1x
+   org%lim_nh4= mnh4 / (1+mno3+mnh4) !in EH, Q2x
+   org%lim_N = org%lim_no3+org%lim_nh4
+   !Note that lim%N = (mno3+mnh4)/(1+mno3+mnh4) < 1.0  (which should be the case)
+   !other way of expressing lim_ terms:
+   !!lim_no3=di%NO3/(di%NO3+apar%kno3*(1+di%NH4/apar%knh4))  
+   !!lim_nh4=di%NH4/(di%NH4+apar%knh4*(1+di%NO3/apar%kno3))
+     
+   !P limitation: choose between dip/dop
+   org%lim_dip= di%P/(di%P+apar%Kp)
+   org%lim_P=org%lim_dip
+   org%dop_uptake=.false.
+   if (apar%dop_allowed) then
+     org%lim_dop= dom%P/(dom%P+apar%Kp)
+     if ((org%lim_dip<=0.7) .and. (org%lim_dop>org%lim_dip)) then 
+       org%lim_P=org%lim_dop
+       org%dop_uptake=.true.
+     end if
+   end if
+     
    !C
-   lim%C=1.0 !?
-   !org%nutlim=Alim%C
+   lim%C=1.0 ! todo: introduce a DIC limitation term to avoid growth when DIC=0
+   !org%nutlim=lim%C
    
+   !N&P
    !if variation of internal stores is not resolved
    if (apar%metIntSt .eq. 0) then
 
@@ -487,27 +532,8 @@ module gpm_common
      end if
      
      !LIMITATIONS
-     lim%P=di%P/(di%P+apar%Kp)
-     !todo:
-     !if (apar%dop_allowed) then
-       !phylim_dop=dom%P/(dom%P+apar%Kp)
-       !if ((Alim%P<=0.7) .and. (phylim_dop>Alim%P)) dop_uptake=.true.
-       !if (dop_uptake)
-        ! Alim%P=phylim_dop
-       !end if
-     !end if
-     
-     lim%N = di%N/(di%N+apar%Kn)
-     !todo: when NO3 and NH4 are resolved:
-     !mno3=di%NO3/apar%kno3
-     !mnh4=di%NH4/apar%knh4
-     !lim_no3= mno3 / (1+mno3+mnh4) !in EH, Q1x
-     !lim_nh4= mnh4 / (1+mno3+mnh4) !in EH, Q2x
-     !Alim%N=lim_no3+lim_nh4
-     !Alim%N = (mno3+mnh4)/(1+mno3+mnh4) < 1.0  (which should be the case)
-     !other way of expressing lim_ terms:
-     !!lim_no3=di%NO3/(di%NO3+apar%kno3*(1+di%NH4/apar%knh4))  
-     !!lim_nh4=di%NH4/(di%NH4+apar%knh4*(1+di%NO3/apar%kno3))
+     lim%P=org%lim_P
+     lim%N=org%lim_N
      
      !QR approximations
      org%QPr=lim%P
@@ -531,10 +557,14 @@ module gpm_common
      lim%N= _ONE_ - apar%QNmin/org%QN
      
      !UPTAKE
-     upt%P = org%C*fT*apar%VPmax*(1.0-org%QPr)*di%P/(di%P+apar%Kp) ![mmol/m3/d]
-     !todo: dop_allowed?
-     upt%N = org%C*fT*apar%VNmax*(1.0-org%QNr)*di%N/(di%N+apar%Kn) ![mmol/m3/d]
-     !todo: NO3,NH4 seperate?
+     !P
+     upt%P = org%C*fT*apar%VPmax*(1.0-org%QPr)*org%lim_P ![mmol/m3/d]
+     !N
+     !when no3 and nh4 are not resolved:
+     !upt%N = org%C*fT*apar%VNmax*(1.0-org%QNr)*org%lim_N ![mmol/m3/d]
+     !NO3,NH4 seperate:
+     upt%NO3 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_no3
+     upt%NH4 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_nh4
    else
      call apar%fatal_error('common.F90:get_fI','for '//trim(apar%name)// ' specified metIntSt option is not available')
    end if
@@ -607,7 +637,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_heterotrophic)       :: org
-   type(type_EHmixo), intent(in)  :: mpar
+   type(type_GPMmixo), intent(in)  :: mpar
    real(rk), intent(in)           :: fT
    type(type_elms)                :: mort
 ! !LOCAL VARIABLES
@@ -617,6 +647,7 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOC
 !   
+   fy=_ONE_
    if (org%C .lt. eps) fy=_ZERO_
    mort%C = fy * (mpar%rmd*fT + mpar%rmdq*org%C) * org%C
    mort%P = mort%C*org%QP !pic_d1c+pic_d2c
@@ -640,7 +671,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_autotrophic)        :: org
-   type(type_EHaut), intent(in)  :: apar
+   type(type_GPMaut), intent(in)  :: apar
    real(rk), intent(in)          :: fT
    type(type_elms)               :: mort
 ! !LOCAL VARIABLES
@@ -650,6 +681,7 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOC
 !   
+   fy=_ONE_
    if (org%C .lt. eps) fy=_ZERO_
    mort%C = fy * (apar%rmd*fT + apar%rmdq*org%C) * org%C
    mort%P = mort%C*org%QP !pic_d1c+pic_d2c
@@ -688,8 +720,8 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_autotrophic)       :: org
-   type(type_EHaut), intent(in)  :: apar
-   type(type_elms), intent(in)   :: upt
+   type(type_GPMaut), intent(in)  :: apar
+   type(type_dim), intent(in)   :: upt
    type(type_elms)               :: exud
 ! !LOCAL VARIABLES
    real(rk)                      :: fy
@@ -702,7 +734,7 @@ module gpm_common
    fy = _ONE_
    if (org%C .lt. TINY) fy = _ZERO_ ! treshold for mortality/loss niche (tres_pXn)
    exud%C = fy * apar%gam * upt%C  
-   exud%P = exud%C * org%QP       
+   exud%P = exud%C * org%QP
    exud%N = exud%C * org%QN
    if (apar%resolve_Si) then
      !in EH exud%Si is not included, but without it, Si is not conserved
@@ -728,7 +760,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_heterotrophic)      :: org
-   type(type_EHmixo), intent(in) :: mpar
+   type(type_GPMmixo), intent(in) :: mpar
    real(rk), intent(in)          :: fT
    type(type_elms)               :: excr
 ! !LOCAL VARIABLES
@@ -765,7 +797,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_autotrophic)       :: org
-   type(type_EHaut), intent(in) :: apar
+   type(type_GPMaut), intent(in) :: apar
    type(type_env), intent(in)    :: env
 !
 !EOP
@@ -810,7 +842,7 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class(org_autotrophic)       :: org
-   type(type_EHaut), intent(in) :: apar
+   type(type_GPMaut), intent(in) :: apar
    real(rk), intent(in)          :: fT
    type(type_env),intent(in)     :: env
    real(rk)                      :: fI,mumax
@@ -872,9 +904,9 @@ module gpm_common
 !
 ! !INPUT PARAMETERS:
    class (org_autotrophic)      :: org
-   type (type_EHaut),intent(in) :: apar
+   type (type_GPMaut),intent(in) :: apar
    real(rk),intent(in)           :: fT
-   type (type_elms)              :: upt
+   type (type_dim)              :: upt
    real(rk)                      :: exud_soc
 ! !LOCAL VARIABLES
    real(rk)                      :: vC_fTfI,vC_fTfIfN
@@ -891,9 +923,9 @@ module gpm_common
    ! Aupt%C: [mmolC/m3/d], final (to appear in RHS) bulk C uptake rate. In EH, this is the 'Effective C fixation' (dic_pxc) 
    ! loss_soc = [mmolC/m3/d], bulk loss rate in SOC form. In EH, this is 'SOC exudation' (p1c_soc)
    
-   vC_fTfI = org%C *apar%vCmax*fT*org%fI
+   vC_fTfI = org%C *apar%vCmax*fT*org%fI !in EH: dic_p1c (first calculation, i.e., growth without nut lim )
    !write(*,*)'apar%vCmax,fT,org%fI',apar%vCmax,fT,org%fI
-   vC_fTfIfN = vC_fTfI * org%nutlim 
+   vC_fTfIfN = vC_fTfI * org%nutlim !in EH: dic_p1c_red
    select case(apar%metCexc)
      case default
        call apar%fatal_error('common.F90:get_PP_upt4s','for '//trim(apar%name)// ' specified metCexc option is not available')
@@ -911,10 +943,11 @@ module gpm_common
    !calculate the balanced-uptake terms (Si, and potentially N and P too)
    if (apar%metIntSt .eq. 0) then
     upt%P= vC_fTfIfN * org%QP !/apar%%C2P
-    upt%N= vC_fTfIfN * org%QN !/apar%%C2N
-    !todo: when NO3 and NH3 are resolved:
-    !Aupt%NO3=Aupt%C*org%QP*lim_no3 !in EH, lim_no3=Q1x 
-    !Aupt%NH4=Aupt%C*org%QN*lim_nh4 !in EH, lim_nh4=Q21
+    !when NO3 and NH3 are not seperately resolved
+    !upt%N= vC_fTfIfN * org%QN !/apar%%C2N
+    !when NO3 and NH3 are resolved:
+    upt%NO3=upt%C*org%QN*org%lim_no3 !in EH, lim_no3=Q1x 
+    upt%NH4=upt%C*org%QN*org%lim_nh4 !in EH, lim_nh4=Q21
    end if
    !uptake of Si and Ccal is based on C uptake anyway.
    if (apar%resolve_Si) then
@@ -956,7 +989,7 @@ module gpm_common
    implicit none
 !
 ! !INPUT PARAMETERS:
-   type(type_EHbase), intent(in) :: bpar
+   type(type_GPMbase), intent(in) :: bpar
    real(rk), intent(in)         :: temp
    !real(rk)                     :: get_fT
 !

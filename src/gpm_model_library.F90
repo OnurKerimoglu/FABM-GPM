@@ -5,8 +5,6 @@ module gpm_model_library
    use gpm_common
    use gpm_phytoplankton
    use gpm_zooplankton
-   use gpm_abio_pel
-   use gpm_abio_sed
    use gpm_version
    ! Add new components modules here
 
@@ -37,8 +35,6 @@ contains
       select case (name)
          case ('phytoplankton'); allocate(type_gpm_phytoplankton::model)
          case ('zooplankton'); allocate(type_gpm_zooplankton::model)
-         case ('abio_pel'); allocate(type_gpm_abio_pel::model)
-         case ('abio_sed'); allocate(type_gpm_abio_sed::model)
          ! Add new components models here
       end select
    end subroutine create
