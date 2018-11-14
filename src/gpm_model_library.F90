@@ -2,7 +2,9 @@ module gpm_model_library
 
    use fabm_types, only: type_base_model_factory, type_base_model
 
-   use gpm_plankton
+   use gpm_common
+   use gpm_phytoplankton
+   use gpm_zooplankton
    use gpm_abio_pel
    use gpm_abio_sed
    use gpm_version
@@ -33,7 +35,8 @@ contains
       class (type_base_model),pointer :: model
 
       select case (name)
-         case ('plankton'); allocate(type_gpm_plankton::model)
+         case ('phytoplankton'); allocate(type_gpm_phytoplankton::model)
+         case ('zooplankton'); allocate(type_gpm_zooplankton::model)
          case ('abio_pel'); allocate(type_gpm_abio_pel::model)
          case ('abio_sed'); allocate(type_gpm_abio_sed::model)
          ! Add new components models here

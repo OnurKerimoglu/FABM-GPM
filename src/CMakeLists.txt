@@ -4,7 +4,9 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.F90.in ${CMAKE_CURRENT_BINARY
 add_library(fabm_models_gpm OBJECT
             gpm_model_library.F90
             ${CMAKE_CURRENT_BINARY_DIR}/version.F90
-            plankton.F90
+            common.F90
+            phytoplankton.F90
+            zooplankton.F90
             abio_pel.F90
             abio_sed.F90           
            )
