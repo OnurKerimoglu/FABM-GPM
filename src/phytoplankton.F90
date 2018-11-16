@@ -78,13 +78,16 @@
    ! and are converted here to values per second.
    
    !General Parameters
+   call self%get_parameter(self%resolve_Si,  'resolve_Si',   '-',     'whether to resolve Si cycle',          default=.false.)
+   call self%get_parameter(self%lim_Si,  'lim_Si',   '-',     'whether limited by Si',          default=.false.)
+   
    call self%get_parameter(self%metext,  'metext',   '-',  'method for calculating light ext.',  default=0)
    call self%get_parameter(self%kc,      'kc',       'm^2/mmolC',  'C-specific light extinction',              default=0.0045_rk )
    call self%get_parameter(self%kc,      'kchl',     'm^2/gChl',   'chl-specific light extinction',              default=0.023_rk )
    
    call self%get_parameter(self%metvel,   'metvel',   '-',  'method for calculating settling vel.',  default=0)
    call self%get_parameter(self%w,       'w',        'm/d',        'vertical velocity (<0 for sinking)',     default=0.0_rk, scale_factor=d_per_s)  
-   
+
    call self%get_parameter(self%metTresp, 'metTresp',  '-',   'method to calcualte T resp.',   default=1)
    call self%get_parameter(self%Q10,      'Q10',     '-',     'Q10 for kinetic rates fr',       default=1.5_rk)
    call self%get_parameter(self%Tref,     'Tref',    'celcius',    'reference temperature for aut. proc.',default=10.0_rk)
@@ -101,7 +104,7 @@
    call self%get_parameter(self%QNmax,    'QNmax',    'molN/molC',    'Max. N Quota',                 default=0.22_rk)
    call self%get_parameter(self%QNmin,    'QNmin',    'molN/molC',    'Subsistance N Quota',          default=0.12_rk)
 
-   !autotrophy
+   ! Autotrophic Parameters
    call self%get_parameter(self%gam,     'gam',     '-',       'exudation fraction',       default=0.05_rk)
    call self%get_parameter(self%vCmax,    'vCmax',      '/d',       'maximum production rate',          default=1.1_rk,  scale_factor=d_per_s)
    call self%get_parameter(self%VPmax,    'VPmax',     'mmolP/mmolC/d','Max. phosphorus uptake rate',          default=1.0_rk, scale_factor=d_per_s)
@@ -110,19 +113,14 @@
    call self%get_parameter(self%Kp,       'Kp',        'mmolP/m^3',   'half-saturation P concentration',  default=0.05_rk)
    call self%get_parameter(self%Kno3,     'Knh4',        'mmolN/m^3',   'half-saturation ammonium concentration',  default=4.2_rk)
    call self%get_parameter(self%Knh4,     'Kno3',        'mmolN/m^3',   'half-saturation nitrate concentration',  default=4.2_rk)
-   
    call self%get_parameter(self%metIresp,'metIresp', '-',         'light response',                          default=1)
    call self%get_parameter(self%islope,   'islope',    'mmolC/m^2/W',  'slope of the P-I curve',                  default=0.05_rk) !when metIresp=1 & 3
    call self%get_parameter(self%Iopt,     'Iopt',      'W/m^2',  'half-saturation nutrient concentration',  default=100._rk) !when metIresp=2 & 4
    call self%get_parameter(self%Imin ,    'Imin',      'W/m^2',     'min. light intensity to be adjusted',     default=25._rk) !when metIresp=5
-   
    call self%get_parameter(self%metCexc,   'metCexc',  '-',   'exc C uptake method',   default=0)
    call self%get_parameter(self%excess,   'excess',  '-',   'excess carbon assimilation fraction',   default=0.0_rk)
-   
-   call self%get_parameter(self%resolve_Si,  'resolve_Si',   '-',     'whether to resolve Si cycle',          default=.false.)
    call self%get_parameter(self%C2Si,     'C2Si',    'molC/molSi',  'molar C:Si ratio', default=5.76_rk)  !Brzezinski, 1985: 106/15=7.067
    call self%get_parameter(self%Ksi,      'Ksi',      'mmolSi/m^3',   'half-saturation Si concentration',  default=0.5_rk)
-   
    call self%get_parameter(self%metchl,   'metchl', '-', 'method for representing chlorophyll', default=0)
    call self%get_parameter(self%C2Chl,    'C2Chl',   'gC/gChl',   'gC:gChl ratio', default=50._rk)
    
@@ -149,7 +147,7 @@
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundN)
    end if
    !Si
-   if (self%resolve_Si) then
+   if (self%lim_Si) then
      !Si stored in plankton is not explicitly resolved
      call self%add_to_aggregate_variable(standard_variables%total_silicate,self%id_boundC,scale_factor=1./self%C2Si)
    end if
@@ -183,7 +181,7 @@
    !O2
    call self%register_state_variable(self%id_O2,'O2','mmol O2/m^3','O2 in water')
    !Si
-   if (self%resolve_Si) then
+   if (self%lim_Si) then
      call self%register_state_dependency(self%id_DISi,'DISi')
      call self%register_state_dependency(self%id_det2Si,'det2Si')
    end if
@@ -195,11 +193,6 @@
    !Diagnostics
     
    !general
-    call self%register_diagnostic_variable(self%id_dPAR,'PAR','W/m^2','-PAR',    &
-                                           output=output_time_step_averaged)
-    call self%register_diagnostic_variable(self%id_Closs,'Closs','mmolC/m^3/d', ' bulk C loss rate',   &
-                                           output=output_time_step_averaged)                                    
-
    if ((self%metIntSt .eq. 0)) then 
      !call self%register_diagnostic_variable(self%id_QN,'QN','molN/molC', 'fixed molar N:C ratio',         &
      !                                     output=output_time_step_averaged)
@@ -223,17 +216,21 @@
     else 
       call self%fatal_error('phytoplankton.F90/initialize:','for '//trim(self%name)// ' specified metIntSt  option is not available')
    end if
-  
+   
+   call self%register_diagnostic_variable(self%id_Closs,'Closs','mmolC/m^3/d', ' bulk C loss rate',   &
+                                           output=output_time_step_averaged) 
    call self%register_diagnostic_variable(self%id_Ploss,'Ploss','mmolP/m^3/d', ' bulk P loss rate',   &
-                                          output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_Plim,'limP','-', 'P limitation',  &
                                           output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_Nloss,'Nloss','mmolN/m^3/d', ' bulk N loss rate',   &
                                           output=output_time_step_averaged) 
+                                          
+   ! Autototrophy
+   call self%register_diagnostic_variable(self%id_dPAR,'PAR','W/m^2','-PAR',    &
+                                           output=output_time_step_averaged)
+   call self%register_diagnostic_variable(self%id_Plim,'limP','-', 'P limitation',  &
+                                          output=output_time_step_averaged)   
    call self%register_diagnostic_variable(self%id_Nlim,'limN','-', 'N limitation',  &
                                           output=output_time_step_averaged)
-     
-!    !autotrophy
    call self%register_diagnostic_variable(self%id_MuClim_A,'MuClimA','/d', 'contribution of autotrophy to C-lim growth',&
                                         output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_NPPR,'NPPR','/d','-NPPR',              &
@@ -249,7 +246,7 @@
    call self%register_diagnostic_variable(self%id_exudsoc,'exudsoc','mmolC/m^3/d', ' bulk C exudation rate',   &
                                            output=output_time_step_averaged)  
                                            
-   if (self%resolve_Si) then
+   if (self%lim_Si) then
      call self%register_diagnostic_variable(self%id_Silim,'limSi','-', 'Si limitation',  &
                                           output=output_time_step_averaged)
    end if
@@ -269,7 +266,7 @@
    call self%add_to_aggregate_variable(total_NPPR,self%id_NPPR)
    call self%add_to_aggregate_variable(total_chlorophyll,self%id_Chl)
    
-   !register the diagnostic var phy%Qr and phy$Chl also as dependencies, as they me be required by other modules
+   !register the diagnostic var Qr and Chl also as dependencies, such that its value can be accessed
    call self%register_dependency(self%id_QPr_dep,'QPr', '-', 'relative QP')
    call self%register_dependency(self%id_QNr_dep,'QNr', '-', 'relative QN')
    call self%register_dependency(self%id_Chl_dep,'Chl', '-', 'Chl concentration')
@@ -288,7 +285,7 @@
 !-----------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Right hand sides of NPZD model
+! !IROUTINE: Right hand sides
 !
 ! !INTERFACE:
    subroutine do(self,_ARGUMENTS_DO_)
@@ -314,10 +311,6 @@
 !EOP
 !-----------------------------------------------------------------------
 !BOC
-   !if (debug) then
-   !  _GET_GLOBAL_(self%id_doy,doy) !day of year
-   !  write(*,'(A,2F7.3)')'doy:',doy
-   !end if
    
    ! Enter spatial loops (if any)
    _FABM_LOOP_BEGIN_
@@ -340,7 +333,7 @@
    _GET_HORIZONTAL_(self%id_I_0,env%I0)  ! surface short wave radiation
 
    ! Debugging logic
-   if (debug .and. (env%depth .lt. 5.6 .and. env%depth .gt. 4.4)) then
+   if (debug .and. (env%depth .lt. 1.0 .and. env%depth .gt. 0.0)) then
      debw=.true.
    else 
      debw=.false.
@@ -349,16 +342,6 @@
    !if (debw) write(*,'(1A)',advance='no') ''
    
    ! !Retrieve state variables
-   !_GET_(self%id_DIC,di%C) !?
-   _GET_(self%id_DIP,di%P)
-   if (self%dop_allowed) then
-     _GET_(self%id_DOP,dom%P)
-   end if
-   _GET_(self%id_DINO3,di%NO3) ! nitrate
-   _GET_(self%id_DINH4,di%NH4) ! ammonium
-   if (self%resolve_Si) then
-     _GET_(self%id_DISi,di%Si)
-   end if
    
    ! retrieve bound elements
    _GET_(self%id_boundC,org%C) ! C bound to the organismal system
@@ -366,6 +349,18 @@
      _GET_(self%id_boundP,org%P)
      _GET_(self%id_boundN,org%N) 
    end if 
+   
+   ! collect resources
+   !_GET_(self%id_DIC,di%C) !?
+   _GET_(self%id_DIP,di%P)
+   if (self%dop_allowed) then
+     _GET_(self%id_DOP,dom%P)
+   end if
+   _GET_(self%id_DINO3,di%NO3) ! nitrate
+   _GET_(self%id_DINH4,di%NH4) ! ammonium
+   if (self%lim_Si) then
+     _GET_(self%id_DISi,di%Si)
+   end if
    !
    !END OF PREPARE
    !-------------------------------------------------------------------------
@@ -394,7 +389,7 @@
    
    ! LOSSES
    call org%get_losses_exud(self%type_GPMaut,Aupt,exud)
-   call org%get_losses_mort_aut(self%type_GPMaut,fT,mort)
+   call org%get_losses_mort(self%type_GPMaut,1.0_rk,fT,mort)
    !
    !END OF CALCULATIONS: no other calculation outside this box
    !-------------------------------------------------------------------------
@@ -407,17 +402,18 @@
    !if (env%par .gt. 0.0) write(*,'(A,5F14.10)')'Cupt,Nupt,exsoc,exC,exN',Aupt%C*s2d,Aupt%N*s2d,exud_soc*s2d,exud%C*s2d,exud%N*s2d
    !if (env%par .gt. 0.0) write(*,'(A,3F14.8)')'Aupt%C:N,exud%C:N,mort%C:N:',(Aupt%C-exud_soc)/Aupt%N,(exud%C)/exud%N,mort%C/mort%N
    !write(*,'(A,2F14.10)')'C2N, RHS C/N',self%C2N,(Aupt%C - exud%C - mort%C - exud_soc)/(Aupt%N - exud%N - mort%N)
-   _SET_ODE_(self%id_boundC, Aupt%C - exud%C - mort%C - exud_soc)
+   _SET_ODE_(self%id_boundC, Aupt%C - exud%C - exud_soc- mort%C)
    if ((self%metIntSt .eq. 1)) then ! .or. (self%metIntSt .eq. 0)  !(for debugging purposes)
      _SET_ODE_(self%id_boundP, Aupt%P - exud%P - mort%P) 
      _SET_ODE_(self%id_boundN, Aupt%NO3+Aupt%NH4 - exud%N - mort%N)
    end if
    
+   !O2
+   _SET_ODE_(self%id_O2,Aupt%C)
+   
    ! Uptake Targets
    !C
    _SET_ODE_(self%id_DIC,-Aupt%C )
-   !O2
-   _SET_ODE_(self%id_O2,Aupt%C)
    !P
    if (org%dop_uptake) then
      _SET_ODE_(self%id_DOP,-Aupt%P)
@@ -428,7 +424,7 @@
    _SET_ODE_(self%id_DINO3,-Aupt%NO3) !*org%lim_no3/Alim%N)
    _SET_ODE_(self%id_DINH4,-Aupt%NH4) !*org%lim_nh4/Alim%N) 
    !Si
-   if (self%resolve_Si) then
+   if (self%lim_Si) then
      _SET_ODE_(self%id_DISi,-Aupt%Si)
    end if
    !if (self%resolve_carb) then
@@ -458,7 +454,7 @@
    _SET_ODE_(self%id_det1N, mort%N*(1.0-self%frac_d2x))
    _SET_ODE_(self%id_det2N, mort%N*self%frac_d2x)
    !Si
-   if (self%resolve_Si) then
+   if (self%lim_Si) then
      _SET_ODE_(self%id_dISi,exud%Si)
      _SET_ODE_(self%id_det2Si,mort%Si)
      !if (debw) write(*,'(2A, 2F14.10)') self%name, 'IngSiunas', IngSiunas
@@ -481,9 +477,10 @@
    !end if
    
    ! Diagnostics
-   _SET_DIAGNOSTIC_(self%id_dPAR,env%par)
+   !General
    _SET_DIAGNOSTIC_(self%id_Closs,(mort%C+exud%C+exud_soc)*s2d)
-   
+   _SET_DIAGNOSTIC_(self%id_Ploss,(mort%P+exud%P)*s2d)
+   _SET_DIAGNOSTIC_(self%id_Nloss,(mort%N+exud%N)*s2d)
    if ((self%metIntSt .eq. 0)) then
      !_SET_DIAGNOSTIC_(self%id_QP, org%QP)
      !_SET_DIAGNOSTIC_(self%id_QN, org%QN)
@@ -498,28 +495,24 @@
    end if
    _SET_DIAGNOSTIC_(self%id_Plim,Alim%P)
    _SET_DIAGNOSTIC_(self%id_Nlim,Alim%N)
-   _SET_DIAGNOSTIC_(self%id_Ploss,(mort%P+exud%P)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Nloss,(mort%N+exud%N)*s2d)
-   
-    !Autotrophy
-    _SET_DIAGNOSTIC_(self%id_MuClim_A,Aupt%C/org%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
-    _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_Pgain_A, Aupt%P*s2d)
-    _SET_DIAGNOSTIC_(self%id_NO3gain_A, Aupt%NO3*s2d)
-    _SET_DIAGNOSTIC_(self%id_NH4gain_A, Aupt%NH4*s2d)
-    if (self%metCexc .ne. 0) then
-      _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
-    end if
-    if (self%resolve_Si) then
-      _SET_DIAGNOSTIC_(self%id_Silim,Alim%Si)
-    end if
-    if (self%metchl .eq. 0) then
-      _SET_DIAGNOSTIC_(self%id_Chl, org%Chl)
-    else if (self%metchl .eq. 1) then
-      _SET_DIAGNOSTIC_(self%id_Chl, org%Chl)
-      _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
-    end if 
+   !Autotrophy
+   _SET_DIAGNOSTIC_(self%id_dPAR,env%par)
+   _SET_DIAGNOSTIC_(self%id_MuClim_A,Aupt%C/org%C*s2d)
+   _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
+   _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
+   _SET_DIAGNOSTIC_(self%id_Pgain_A, Aupt%P*s2d)
+   _SET_DIAGNOSTIC_(self%id_NO3gain_A, Aupt%NO3*s2d)
+   _SET_DIAGNOSTIC_(self%id_NH4gain_A, Aupt%NH4*s2d)
+   _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
+   if (self%lim_Si) then
+     _SET_DIAGNOSTIC_(self%id_Silim,Alim%Si)
+   end if
+   if (self%metchl .eq. 0) then
+     _SET_DIAGNOSTIC_(self%id_Chl, org%Chl)
+   else if (self%metchl .eq. 1) then
+     _SET_DIAGNOSTIC_(self%id_Chl, org%Chl)
+     _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
+   end if 
    !
    !END OF WRITE
    !-------------------------------------------------------------------------

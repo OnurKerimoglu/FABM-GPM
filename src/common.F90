@@ -43,7 +43,7 @@ module gpm_common
      !real(rk) :: Ccal
    end type
    
-   ! data and procedures relevant for the nutrition status of organisms 
+   ! variables and procedures of general relevance to organisms 
    type, extends(type_elms),public :: org_basic
      real(rk) :: QP     
      real(rk) :: QN
@@ -61,9 +61,10 @@ module gpm_common
      contains
      procedure :: get_nut_Q
      procedure :: get_nut_QLU
+     procedure :: get_losses_mort
    end type
    
-   !variables relevant for autotrophic processes
+   !autotrophs: variables/functions relevant for autotrophic processes
    type, extends(org_basic),public :: org_autotrophic
      real(rk) :: Chl
      real(rk) :: QChl
@@ -73,11 +74,10 @@ module gpm_common
      procedure :: get_chl
      procedure :: get_PP_upt4fs
      procedure :: get_losses_exud
-     procedure :: get_losses_mort_aut
    end type
    
-   !variables relevant for heterotrophic processes
-   type, extends(org_basic),public :: org_heterotrophic
+   !zooplankton/mixotrophs: combine the variables/functions relevant for autotrophic and heterotrophic processes
+   type, extends(org_autotrophic),public :: org_mixotrophic
      real(rk) ::  KzFact
      real(rk) ::  ftotC !,ftotP,ftotN
      contains
@@ -85,7 +85,6 @@ module gpm_common
      procedure :: get_fMon
      procedure :: get_adjasef
      procedure :: get_losses_excr
-     procedure :: get_losses_mort_het
    end type
    
    !structure to collect prey parameters (variable identifiers, stoichiometric ratios, etc)
@@ -160,7 +159,7 @@ module gpm_common
      type (type_horizontal_dependency_id)::id_I_0
 
 !    Model parameters
-     logical  :: resolve_Si,dop_allowed !,resolve_cal,resolve_carb
+     logical  :: resolve_Si,lim_Si,dop_allowed !,resolve_cal,resolve_carb
      integer  :: metchl,metIresp,metCexc
      real(rk) :: kchl,gam
      real(rk) :: C2Si,C2Chl !,C2Ccal
@@ -183,9 +182,10 @@ module gpm_common
       
 !     Model parameters
       !heteroptrophic
-      logical  :: dynpref !,resolve_Si
+      logical  :: dynpref
       integer  :: num_prey
       type(prey_pars),dimension(:),allocatable :: prpar
+      real(rk) :: fracaut
       real(rk) :: rmn,gmax,Kz,asefC,asefP,asefN,unas_detfrac
    end type
 
@@ -204,7 +204,7 @@ module gpm_common
 ! !IROUTINE: Grazing on Multiple Prey Items
 !
 ! !INTERFACE:
-   subroutine get_GronMultiPrey(org,mpar,prpar,fT,prdat,Ing)
+   subroutine get_GronMultiPrey(org,mpar,prpar,gmax,fT,prdat,Ing)
    !
 ! !DESCRIPTION:
 ! Here, grazing on multiple prey is formulated.
@@ -213,9 +213,9 @@ module gpm_common
    implicit none
 !
 ! !INPUT PARAMETERS:
-   class(org_heterotrophic)     :: org
+   class(org_mixotrophic)     :: org
    type (type_GPMmixo),intent(in):: mpar 
-   real(rk),intent(in)          :: fT
+   real(rk),intent(in)          :: fT,gmax
    type(prey_pars),intent(in)   :: prpar(:)
    type(prey_data)              :: prdat
    type (type_elms)             :: Ing
@@ -266,7 +266,7 @@ module gpm_common
       org%KzFact=1.0
       prdat%weight(i)       = org%get_fMon(prdat%C(i),prdat%rpref(i),org%ftotC,mpar%Kz*org%KzFact)
       !grazing rate of the item
-      prdat%grC(i)       = mpar%gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
+      prdat%grC(i)       = gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
       prdat%grP(i)       = prdat%grC(i)         * prdat%P(i)/prdat%C(i)  !molPprey/molCpred/d
       prdat%grN(i)       = prdat%grC(i)         * prdat%N(i)/prdat%C(i)  !molNprey/molCpred/d
       !prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
@@ -298,7 +298,7 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: Monod formulation for zoophytoplankton grazing on multiple prey (as in Fasham 1990). 
+! !IROUTINE: Monod formulation for zooplankton grazing on multiple prey (as in Fasham 1990). 
 !
 ! !INTERFACE:
    pure real(rk) function get_fmon(org,food,pref,foodtot,Kzeff)
@@ -310,7 +310,7 @@ module gpm_common
    implicit none
 !
 ! !INPUT PARAMETERS:
-   class(org_heterotrophic),intent(in) :: org
+   class(org_mixotrophic),intent(in) :: org
    !type (type_GPMmixo),intent(in) :: mpar
    real(rk), intent(in)          :: food,pref,Kzeff,foodtot!,!KzFact
 !
@@ -339,7 +339,7 @@ module gpm_common
    implicit none
 !
 ! !INPUT PARAMETERS:
-   class(org_heterotrophic)     :: org
+   class(org_mixotrophic)     :: org
    type (type_GPMmixo),intent(in) :: mpar 
    type(prey_data)              :: prdat
    type (type_elms)             :: Ing,asef,Ingas,Ingunas
@@ -572,7 +572,7 @@ module gpm_common
    org%limNP=min(lim%P,lim%N)
    org%nutlim=org%limNP
    
-   if (apar%resolve_Si) then
+   if (apar%lim_Si) then
      !QUOTAS
      org%Si=org%C / apar%C2Si !for consistency
      !LIMITATION
@@ -627,18 +627,18 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOP
 !
-! !IROUTINE: get mortality loss rates for heterotrophs
+! !IROUTINE: get mortality loss rates for phyto,zoo & mixotrophs
 !
 ! !INTERFACE:  
-  subroutine get_losses_mort_het(org,mpar,fT,mort)
+  subroutine get_losses_mort(org,apar,fracaut,fT,mort)
 !
 ! !USES:
    implicit none
 !
 ! !INPUT PARAMETERS:
-   class(org_heterotrophic)       :: org
-   type(type_GPMmixo), intent(in)  :: mpar
-   real(rk), intent(in)           :: fT
+   class(org_basic)       :: org
+   type(type_GPMaut), intent(in)  :: apar
+   real(rk), intent(in)           :: fT,fracaut
    type(type_elms)                :: mort
 ! !LOCAL VARIABLES
    real(rk)                       :: fy
@@ -647,61 +647,29 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOC
 !   
-   fy=_ONE_
-   if (org%C .lt. eps) fy=_ZERO_
-   mort%C = fy * (mpar%rmd*fT + mpar%rmdq*org%C) * org%C
-   mort%P = mort%C*org%QP !pic_d1c+pic_d2c
-   mort%N = mort%C*org%QN
-   
-  end subroutine 
-!
-!EOC
-!-----------------------------------------------------------------------
-
-!-----------------------------------------------------------------------
-!BOP
-!
-! !IROUTINE: get mortality loss rates for autotrophs
-!
-! !INTERFACE:  
-  subroutine get_losses_mort_aut(org,apar,fT,mort)
-!
-! !USES:
-   implicit none
-!
-! !INPUT PARAMETERS:
-   class(org_autotrophic)        :: org
-   type(type_GPMaut), intent(in)  :: apar
-   real(rk), intent(in)          :: fT
-   type(type_elms)               :: mort
-! !LOCAL VARIABLES
-   real(rk)                      :: fy
-!
-!EOP
-!-----------------------------------------------------------------------
-!BOC
-!   
-   fy=_ONE_
+   fy = _ONE_
    if (org%C .lt. eps) fy=_ZERO_
    mort%C = fy * (apar%rmd*fT + apar%rmdq*org%C) * org%C
+   !write(*,*),trim(apar%name),'mort%C:',mort%C
    mort%P = mort%C*org%QP !pic_d1c+pic_d2c
    mort%N = mort%C*org%QN
-   if (apar%resolve_Si) then
-     mort%Si=mort%C/apar%C2Si
+   if (fracaut .gt. 0.0) then
+     if (apar%lim_Si) then
+       mort%Si=mort%C/apar%C2Si
+     end if
    end if
    !if (apar%resolve_carb) then
    !  if (apar%resolve_cal) then
        !mort%Ccal=max(_ZERO_,plossk) !p3k_d2k !L910
    !  else 
-   !    if (.not. apar%resolve_Si) then !non-diatoms
+   !    if (.not. apar%lim_Si) then !non-diatoms
          !psk_d2k (L.1489)
          !mort%Ccal = (mort%C + exud%C)/apar%C2Ccal !psk_d2k
         !else
          !mort%Ccal=0.0 !diatoms accumulate no caCO3, so no loss thereof
-   !    end if !if resolve_Si
+   !    end if !if lim_Si
    !  end if !if resolve_cal
    !end if !if resolve_carb
-   
   end subroutine 
 !
 !EOC
@@ -736,8 +704,8 @@ module gpm_common
    exud%C = fy * apar%gam * upt%C  
    exud%P = exud%C * org%QP
    exud%N = exud%C * org%QN
-   if (apar%resolve_Si) then
-     !in EH exud%Si is not included, but without it, Si is not conserved
+   if (apar%lim_Si) then
+     !in GPM exud%Si is not included, but without it, Si is not conserved
      exud%Si = exud%C/apar%C2Si
    end if
    !exud%calC?
@@ -759,7 +727,7 @@ module gpm_common
    implicit none
 !
 ! !INPUT PARAMETERS:
-   class(org_heterotrophic)      :: org
+   class(org_mixotrophic)      :: org
    type(type_GPMmixo), intent(in) :: mpar
    real(rk), intent(in)          :: fT
    type(type_elms)               :: excr
@@ -950,7 +918,7 @@ module gpm_common
     upt%NH4=upt%C*org%QN*org%lim_nh4 !in EH, lim_nh4=Q21
    end if
    !uptake of Si and Ccal is based on C uptake anyway.
-   if (apar%resolve_Si) then
+   if (apar%lim_Si) then
      upt%Si= vC_fTfIfN/apar%C2Si
    end if
    !if (env%par .gt. 0.0) write(*,'(A,4F14.8)')'vC,fT,fI,fn',apar%%vCmax,fT,fI,org%nutlim 
@@ -961,12 +929,12 @@ module gpm_common
        !modify excess uptake: assume it's additionally limited by calcification lim. (why?)
        !exud_soc =   exud_soc * phylim_calc
      !else
-     !  if (.not. apar%%resolve_Si) then
+     !  if (.not. apar%%lim_Si) then
          !if not resolving Silicate and not being cocco, assume a fixed caCO3 uptake 
          !upt%Ccal=Aupt%C/apar%%C2Ccal !dic_psk
      !  else 
          !upt%Ccal=0.0 !otherwise no CaCO3 was used for skeleton building
-     !  end if !if not resolve_Si
+     !  end if !if not lim_Si
      !end if !if resolve_cal
    !end if !if resolvie_carb
    
