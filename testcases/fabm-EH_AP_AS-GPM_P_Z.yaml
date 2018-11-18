@@ -6,8 +6,8 @@ instances:
     parameters:
       resolve_Si: .true.      # whether to resolve Si-cycle
       coupled2water: .true.   # whether the benthic model is coupled to a pelagic model
-      det1_wsed : 0.4         # sedimentation rate of pelagic detritus
-      det2_wsed : 10.0        # sedimentation rate of pelagic detritus
+      det1_wsed : 0.1         # sedimentation rate of pelagic detritus
+      det2_wsed : 1.0        # sedimentation rate of pelagic detritus
       Q10 : 1.5               # Q10 for remineralization
       brc : 0.028             # benthic rem rate for C
       brn : 0.0333            # benthic rem rate for N
@@ -83,7 +83,7 @@ instances:
       det1N : 0.16            # initial detrital nitrogen
       det2C: 1.06            # initial detrital carbon
       det2P : 0.01            # initial detrital phosphorus
-      det2N : 0.16            # initial
+      det2N : 0.16            # initial detrital nitrogen
       det2Si : 0.15           # initial detrital silica
   GPM_diatRF:
     use: .false.
@@ -378,7 +378,7 @@ instances:
       asefC : 0.6            # assimilation efficiency  for ingested carbon
       asefP : .8             # assimilation efficiency  for ingested carbon
       asefN : .8             # assimilation efficiency  for ingested carbon
-      dynpref : .false.      # dynamical adjustment of preferences (fasham 1990?)
+      dynpref : .true.       # dynamical adjustment of preferences (fasham 1990?)
       num_prey : 4           # number of prey targets
       prey1pref : 0.2        # preference factor for prey1
       prey2pref : 0.2        # preference factor for prey2
