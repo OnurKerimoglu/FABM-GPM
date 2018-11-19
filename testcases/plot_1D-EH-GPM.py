@@ -16,7 +16,7 @@ def plot_maecs_Bpoolx2_phy():
     colmap='viridis'
     #import pdb
     if len(sys.argv) < 2: #this means no arguments were passed      
-      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1d-hlg/test/1D-HLG_GPM-EH'
+      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/1D-40m_GPM-EH'
       disp('plotting default file:'+fname)
     else:
       disp('plotting file specified:'+sys.argv[1])
