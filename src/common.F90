@@ -150,7 +150,7 @@ module gpm_common
      !autotrophs
      !diagnostics
      type (type_diagnostic_variable_id) :: id_Closs,id_Ploss,id_Nloss
-     type (type_diagnostic_variable_id) :: id_dPAR,id_NPPR,id_exudsoc
+     type (type_diagnostic_variable_id) :: id_NPPR,id_exudsoc
      type (type_diagnostic_variable_id) :: id_Cgain_A,id_Pgain_A,id_NO3gain_A,id_NH4gain_A
      type (type_diagnostic_variable_id) :: id_MuClim_A,id_Plim,id_Nlim,id_Silim
      type (type_diagnostic_variable_id) :: id_Chl,id_QChl

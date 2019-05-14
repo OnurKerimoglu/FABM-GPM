@@ -247,8 +247,6 @@
                                           output=output_time_step_averaged) 
    
    ! Autototrophy
-   call self%register_diagnostic_variable(self%id_dPAR,'PAR','W/m^2','-PAR',    &
-                                           output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_Plim,'limP','-', 'P limitation',  &
                                           output=output_time_step_averaged)   
    call self%register_diagnostic_variable(self%id_Nlim,'limN','-', 'N limitation',  &
@@ -656,7 +654,6 @@
    end if
    !Autotrophy
    if (self%fracaut .gt. 0.0) then
-    _SET_DIAGNOSTIC_(self%id_dPAR,env%par)
     _SET_DIAGNOSTIC_(self%id_MuClim_A,Aupt%C/org%C*s2d)
     _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
     _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
