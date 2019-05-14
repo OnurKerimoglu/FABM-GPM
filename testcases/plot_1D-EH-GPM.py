@@ -1,11 +1,11 @@
-"""from plot_maecs_omexdia import plot_maecs_omexdia 
-    (time,z,dz,data,datanames)=plot_maecs_omexdia()"""
-# python /home/onur/WORK/projects/GB/maecs/1d/BO//core/plot_maecs_medmac.py /home/onur/WORK/projects/GB/maecs/1d/BO//gotm-NS_scenarios/GB25_NS_m1024_p0930_medmac_base 1 3
-    
+# terminal call:
+# python plot_1D_GPM.py 1D-GPM.nc plot_sediment(0/1) num_years_to_plot(counting_backwards_from_the_last)
+
 from pylab import *
 import netCDF4 as nc4
 import netcdftime
 import sys
+import warnings
 
 def plot_maecs_Bpoolx2_phy():
     
@@ -16,7 +16,7 @@ def plot_maecs_Bpoolx2_phy():
     colmap='viridis'
     #import pdb
     if len(sys.argv) < 2: #this means no arguments were passed      
-      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/1D-40m_GPM-EH'
+      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/1D-40m_GPM-EH_dm.nc'
       disp('plotting default file:'+fname)
     else:
       disp('plotting file specified:'+sys.argv[1])
@@ -59,20 +59,13 @@ def plot_maecs_Bpoolx2_phy():
         figuresize=(20,10) #(25,15)
     
     #pelagic variables
-    nc=nc4.Dataset(fname+'.nc')
+    nc=nc4.Dataset(fname)
     ncv=nc.variables
     #print('available maecs variables:')        
     #disp(ncv)
     
-    depth=np.squeeze(ncv['z'][:])
-    if len(depth.shape)==2:
-        if all(depth[0]==depth[-1]):
-            depth=depth[0,:]
-        else:
-            depth = depth[0, :]
-            #raise(Warning('plotting for varying-depths is not implemented')) #eg., it needs interpolation on a fixed grid
-
-    #time=ncv['time'][:]/86400.
+    z=np.squeeze(ncv['z'][:]) #depths at layer centers (fabm variables, temp, salt, etc)
+    zi=np.squeeze(ncv['zi'][:]) #depths at layer interfaces (diffusivities, fluxes, etc)
 
     tv = nc.variables['time']
     utime=netcdftime.utime(tv.units)
@@ -91,6 +84,19 @@ def plot_maecs_Bpoolx2_phy():
 
     for i,varn in enumerate(varnames):       
         print varn
+        
+        if varn in ['nuh','nus']:
+            depth=zi #depth at interfaces
+        else:
+            depth=z
+            
+        #if depth vector is 2-D (vary with time)
+        if len(depth.shape)==2:
+            # repeat the tvecC to obtain a matrix
+            t=np.transpose(array([tvecC,]*depth.shape[1]))
+        else:
+            t=tvecC
+
         ax=subplot(ceil(numvar/numcol),numcol,i+1)
 
         if (varnames[i]=='skip'):
@@ -110,6 +116,7 @@ def plot_maecs_Bpoolx2_phy():
         datC=dat[yeari[0],:]
         longname=ncv[varnames[i]].long_name
         shortname=longname.split('hzg_maecs ')[-1]
+        #datC[datC<-1e10] = np.nan
 
         if (np.max(datC)-np.min(datC)<1e-10):
             ax.text(0.5,0.5,varnames[i]+'\n\n all: %3.2f'%np.max(datC),
@@ -126,7 +133,10 @@ def plot_maecs_Bpoolx2_phy():
             else:
                 title(shortname + ' [$%s$]'%units, size=10.0)
 
-            pcf=ax.contourf(tvecC,depth,transpose(datC),cmap=plt.get_cmap(colmap))
+            if len(z.shape) == 2:
+                pcf = ax.contourf(t, depth, datC, cmap=plt.get_cmap(colmap))
+            else:
+                pcf=ax.contourf(tvecC,depth,transpose(datC),cmap=plt.get_cmap(colmap))
 
         #x-axis
         format_date_axis(ax,[tvecC[0], tvecC[-1]])
@@ -188,9 +198,8 @@ def plot_maecs_Bpoolx2_phy():
         
         
     nc.close()
-    savefig(fname+'_cont_'+plottype+'_phy.png')
-    disp('python contour plot saved in: '+fname+'_cont'+plottype+'_phy.png')
-    #show()
+    savefig(fname.split('.nc')[0]+'_cont_'+plottype+'.png')
+    disp('python contour plot saved in: '+fname.split('.nc')[0]+'_cont_'+plottype+'.png')
         
     #if plotsed: return time,z,dz,data,datanames
 
