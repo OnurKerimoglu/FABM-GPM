@@ -117,14 +117,14 @@
    call self%get_parameter(self%metIresp,'metIresp', '-',         'light response',                          default=1)
    call self%get_parameter(self%islope,   'islope',    'mmolC/m^2/W',  'slope of the P-I curve',                  default=0.05_rk) !when metIresp=1 & 3
    call self%get_parameter(self%Iopt,     'Iopt',      'W/m^2',  'half-saturation nutrient concentration',  default=100._rk) !when metIresp=2 & 4
-   call self%get_parameter(self%Imin ,    'Imin',      'W/m^2',     'min. light intensity to be adjusted',     default=25._rk) !when metIresp=5
+   call self%get_parameter(self%islope_perchl,   'islope_perchl',    'gCm2/gChl/molQuanta',  'Chl specific slope of the P-I curve',                  default=10.0_rk) 
    call self%get_parameter(self%metCexc,   'metCexc',  '-',   'exc C uptake method',   default=0)
    call self%get_parameter(self%excess,   'excess',  '-',   'excess carbon assimilation fraction',   default=0.0_rk)
    call self%get_parameter(self%C2Si,     'C2Si',    'molC/molSi',  'molar C:Si ratio', default=5.76_rk)  !Brzezinski, 1985: 106/15=7.067
    call self%get_parameter(self%Ksi,      'Ksi',      'mmolSi/m^3',   'half-saturation Si concentration',  default=0.5_rk)
    call self%get_parameter(self%metchl,   'metchl', '-', 'method for representing chlorophyll', default=0)
    call self%get_parameter(self%Chl2C,    'Chl2C',   'gChl/gC',   'gChl:gC ratio', default=0.02_rk)
-   
+   call self%get_parameter(self%Chl2Cmax, 'Chl2Cmax','gChl/gC',   'gChl:gC ratio', default=0.05_rk)
    !call self%get_parameter(self%resolve_cal,  'resolve_cal',   '-',      'whether to resolve calcification',          default=.false.)
    !call self%get_parameter(self%C2Ccal,   'C2Ccal',   'molC/molC', 'molar ratio of organic to calcite C', default=5.76_rk)  !Brzezinski, 1985: 106/15=7.067
    
@@ -249,21 +249,33 @@
      call self%register_diagnostic_variable(self%id_Silim,'limSi','-', 'Si limitation',  &
                                           output=output_time_step_averaged)
    end if
-  if (self%metchl .eq. 0) then
-     call self%register_diagnostic_variable(self%id_Chl,'Chl','mg/m^3', 'Chl estimated from a fixed Chl:C ratio',         &
+  
+   select case (self%metchl)
+     case default 
+       call self%fatal_error('phytoplankton.F90/initialize:','for '//trim(self%name)// ' specified metchl option is not available')
+     case (0)
+       call self%register_diagnostic_variable(self%id_diagChl,'Chl','mg/m^3', 'Chl estimated from a fixed Chl:C ratio',         &
                                           output=output_time_step_averaged)
-  else if (self%metchl .eq. 1) then
-     call self%register_diagnostic_variable(self%id_Chl,'Chl','mgChl/m^3', 'diagnostically calculated Chl concentration',         &
-                                          output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%id_QChl,'QChl','gChl/gC', 'diagnostically calculated Chl:C ratio',         &
-                                          output=output_time_step_averaged)                                          
-  else
-     call self%fatal_error('phytoplankton.F90/initialize:','for '//trim(self%name)// ' specified metchl option is not available')
-  end if
+       call self%add_to_aggregate_variable(total_chlorophyll,self%id_diagChl)
+     case (1,2)
+       call self%register_diagnostic_variable(self%id_diagChl,'Chl','mg/m^3', 'diagnostically calculated Chl concentration',         &
+                                          output=output_time_step_averaged)  
+       call self%add_to_aggregate_variable(total_chlorophyll,self%id_diagChl)
+     case (20)
+       call self%register_state_variable(self%id_boundChl,'Chl','mg/m^3','bound Chlorophyll', & 
+                                    minimum=_ZERO_)
+       call self%add_to_aggregate_variable(total_chlorophyll,self%id_boundChl)
+       call self%register_diagnostic_variable(self%id_chlrho,'Rho_per_Tmax','-', 'regulatory factor for chl synthesis (rho/Tmax in G97 eq.4)', &
+                                          output=output_time_step_averaged) 
+   end select 
+  
+   if (self%metchl .ne. 0) then
+    call self%register_diagnostic_variable(self%id_QChl,'QChl','gChl/gC', 'diagnostically calculated Chl:C ratio',         &
+                                          output=output_time_step_averaged) 
+   end if
    
    !contribute to aggregate variables
    call self%add_to_aggregate_variable(total_NPPR,self%id_NPPR)
-   call self%add_to_aggregate_variable(total_chlorophyll,self%id_Chl)
    
    !register the diagnostic var Qr and Chl also as dependencies, such that its value can be accessed
    call self%register_dependency(self%id_QPr_dep,'QPr', '-', 'relative QP')
@@ -363,6 +375,14 @@
      _GET_(self%id_boundN,org%N) 
    end if 
    
+   select case (self%metchl) 
+     case (20) !for dynamical Chl options of metchl
+       _GET_(self%id_boundChl,org%Chl)
+       org%QChl =  org%Chl / (org%C * 12.0_rk)
+       !gChl/gC = mgChl/m3 / (mmolC/m3 * 12mgC/mmolC)
+       !write(*,*)'phyto L411. Chl,QChl:',org%Chl,org%QChl
+   end select
+   
    ! collect resources
    !_GET_(self%id_DIC,di%C) !?
    _GET_(self%id_DIP,di%P)
@@ -391,14 +411,18 @@
    !write(*,*)'N: lim%P,lim%N,upt%P,upt%N:',Alim%P,Alim%N !,Aupt%P*s2d,Aupt%N*s2d
    
    !Light limitation
-   ! chl (potentially needed to calculate light limitation)
-   call org%get_chl(self%type_GPMaut,env)
-   ! light limitation factor   
-   call org%get_fI(self%type_GPMaut,fT,env)
+   !Chl is potentially needed to calculate light limitation
+   select case (self%metchl) 
+     case (0,1,2) !for diagnostic Chl options of metchl
+       call org%get_chl(self%type_GPMaut,env)
+   end select
+   call org%get_fI(self%type_GPMaut,env)
    !if (env%par .gt. 0.0) write(*,*)'vc,is,io,im,fT,p',vC_atQmax,self%islope,self%Iopt,self%Imin,fT,env%par
    
    !Primary production (upt%C) and  uptake terms for elements resolved as fixed stoichiometry
    call org%get_PP_upt4fs(self%type_GPMaut,fT,Aupt,exud_soc)
+   !obtain the chl. synth rates, of Chl is dynamic (if not, the subr will do nothing)
+   call org%get_chldyn(self%type_GPMaut,env,Alim,Aupt)
    
    ! LOSSES
    call org%get_losses_exud(self%type_GPMaut,Aupt,exud)
@@ -420,6 +444,14 @@
      _SET_ODE_(self%id_boundP, Aupt%P - exud%P - mort%P) 
      _SET_ODE_(self%id_boundN, Aupt%NO3+Aupt%NH4 - exud%N - mort%N)
    end if
+   
+   select case (self%metchl)
+     case (20) !list here the dynamic Chlorophyll options
+       _SET_DIAGNOSTIC_(self%id_chlrho,org%chlrho)
+       _SET_ODE_(self%id_boundChl, org%chlsynth - (exud%C + exud_soc + mort%C)*12.0_rk*org%QChl)
+       !                             mgChl/m3/s - (mmolC/m3/s)*12.0mgC/mgChl *mgChl/mgC
+       !write(*,*)'org%chlsynth', org%chlsynth,'loss:', - (exud%C + exud_soc + mort%C)*org%QChl,'RHS:',org%chlsynth - (exud%C + exud_soc + mort%C)*org%QChl
+   end select
    
    !O2
    _SET_ODE_(self%id_O2,Aupt%C)
@@ -519,10 +551,8 @@
    if (self%lim_Si) then
      _SET_DIAGNOSTIC_(self%id_Silim,Alim%Si)
    end if
-   if (self%metchl .eq. 0) then
-     _SET_DIAGNOSTIC_(self%id_Chl, org%Chl)
-   else if (self%metchl .eq. 1) then
-     _SET_DIAGNOSTIC_(self%id_Chl, org%Chl)
+   _SET_DIAGNOSTIC_(self%id_diagChl, org%Chl)
+   if (self%metchl .ne. 0) then
      _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
    end if 
    !
@@ -582,6 +612,13 @@
      _SET_VERTICAL_MOVEMENT_(self%id_boundP,vert_vel)
      _SET_VERTICAL_MOVEMENT_(self%id_boundN,vert_vel)
    end if
+   
+   !Chlorophyll
+   select case (self%metchl) 
+     case (20) !for dynamical Chl options of metchl
+       _SET_VERTICAL_MOVEMENT_(self%id_boundChl,vert_vel)
+   end select
+   
    !_SET_DIAGNOSTIC_(self%id_vv , vert_vel*s2d)
 
    ! Leave spatial loops (if any)

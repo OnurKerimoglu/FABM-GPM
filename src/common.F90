@@ -58,6 +58,7 @@ module gpm_common
      real(rk) :: lim_n
      real(rk) :: limNP
      real(rk) :: nutlim
+     real(rk) :: vC_fTfnp
      logical  :: dop_uptake
      contains
      procedure :: get_nut_Q
@@ -70,9 +71,12 @@ module gpm_common
      real(rk) :: Chl
      real(rk) :: QChl
      real(rk) :: fI
+     real(rk) :: chlrho !prop. of biosynthate invested in chl-synthesis
+     real(rk) :: chlsynth  !chlorophyll synthesis rate
      contains
      procedure :: get_fI
      procedure :: get_chl
+     procedure :: get_chldyn
      procedure :: get_PP_upt4fs
      procedure :: get_losses_exud
    end type
@@ -119,7 +123,7 @@ module gpm_common
    ! a base model type to be potentially used for all 'life' modules
    type, extends(type_base_model),public :: type_GPMbase
      !state vars
-     type (type_state_variable_id)      :: id_boundC,id_boundP,id_boundN
+     type (type_state_variable_id)      :: id_boundC,id_boundP,id_boundN,id_boundChl
 
      !diagnostics
      type (type_diagnostic_variable_id) :: id_QP,id_QPr,id_QN,id_QNr,id_N2P
@@ -154,7 +158,7 @@ module gpm_common
      type (type_diagnostic_variable_id) :: id_NPPR,id_exudsoc
      type (type_diagnostic_variable_id) :: id_Cgain_A,id_Pgain_A,id_NO3gain_A,id_NH4gain_A
      type (type_diagnostic_variable_id) :: id_MuClim_A,id_Plim,id_Nlim,id_Silim
-     type (type_diagnostic_variable_id) :: id_Chl,id_QChl
+     type (type_diagnostic_variable_id) :: id_diagChl,id_QChl,id_chlrho
      !type (type_diagnostic_variable_id) :: id_pc_o2o = pc_dic = CGain_A
      type (type_dependency_id)          :: id_par,id_pardm,id_Chl_dep
      type (type_horizontal_dependency_id)::id_I_0,id_I0dm
@@ -163,9 +167,9 @@ module gpm_common
      logical  :: resolve_Si,lim_Si,dop_allowed !,resolve_cal,resolve_carb
      integer  :: Idm_met,metchl,metIresp,metCexc
      real(rk) :: kchl,gam
-     real(rk) :: C2Si,Chl2C !,C2Ccal
+     real(rk) :: C2Si,Chl2C,Chl2Cmax !,C2Ccal
      real(rk) :: vCmax,excess,Kp,Kno3,Knh4,Ksi
-     real(rk) :: islope,Iopt,Imin
+     real(rk) :: islope,islope_perchl,Iopt
      real(rk) :: VPmax,VNmax
      !real(rk) :: c_max,rccalc_min,xkc_i,xkk_i,detach_min
    end type
@@ -572,6 +576,7 @@ module gpm_common
    
    org%limNP=min(lim%P,lim%N)
    org%nutlim=org%limNP
+   org%vC_fTfnp = apar%vCmax * fT * org%limNP !needed for calculating e.g., Chl:C and fI 
    
    if (apar%lim_Si) then
      !QUOTAS
@@ -768,7 +773,7 @@ module gpm_common
    class(org_autotrophic)       :: org
    type(type_GPMaut), intent(in) :: apar
    type(type_env), intent(in)    :: env
-   real(rk)                      :: Idm_Q
+   real(rk)                      :: Idm_Q,Pmax,K_I
 !
 !EOP
 !-----------------------------------------------------------------------
@@ -783,16 +788,72 @@ module gpm_common
        Idm_Q=molqperday_per_W*env%Idm !W/m2 * mmq/d *d/s= molQ/s/m2
        org%QChl=0.003_rk + max(0.0_rk,0.0154_rk*exp(0.05_rk*env%temp)*exp(-0.059_rk*Idm_Q)*org%limNP) !mgChl/mgC
        ! org%limNP= mu' (Cloern et al 1995, P1314 nutrient-limited growth rate normalized to the max. rate)
-       !write(*,*)'common L753. metchl: ',apar%metchl,'Idm: ',Idm,'QChl:',org%QChl
-       
-      !case(2) !Geider 1997
-      !case(3) !IA
+       !write(*,*)'common L786. metchl: ',apar%metchl,'Idm: ',Idm,'QChl:',org%QChl
+     case(2) ! Geider 1997, instant (balanced growth)
+       Idm_Q=molqperday_per_W*env%Idm/s2d !W/m2 * mmq/d *d/s= molQ/s/m2
+       Pmax=org%vC_fTfnp
+       K_I=Pmax/apar%Chl2Cmax*apar%islope_perchl
+       org%QChl=apar%Chl2Cmax/(1+ Idm_Q/(2*K_I))
    end select
    
    select case (apar%metchl)
-     case (0,1)
+     case (0,1,2)
        org%Chl=org%C*12.0*org%QChl  !mmolC* 12mgC/mmolC *gChl/gC  = mgChl
     end select
+   
+  end subroutine 
+!
+!EOC
+!-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: get chlorophyll bulk and quota value
+!
+! !INTERFACE:  
+  subroutine get_chldyn(org,apar,env,lim,Aupt)
+!
+! !DESCRIPTION:
+! Here, chlorophyll dynamics are formulated 
+!
+! !USES:
+   implicit none
+!
+! !INPUT PARAMETERS:
+   class(org_autotrophic),intent(inout)       :: org
+   type(type_GPMaut), intent(in) :: apar
+   type(type_env), intent(in)    :: env
+   type (type_elms),intent(in)   :: lim
+   type (type_dim),intent(in)    :: Aupt
+   real(rk)                      :: I_Q
+   real(rk), parameter           :: Chl2Cmin=0.008_rk
+!
+!EOP
+!-----------------------------------------------------------------------
+!BOC
+!   
+   select case (apar%metchl)
+     !do nothing, if it's not one of the dynamic options
+     case (20) ! Geider 1997
+       I_Q=molqperday_per_W*env%par/s2d !W/m2 * mmq/d *d/s= molQ/s/m2
+       if (I_Q .gt. 1e-10) then !at very low light conditions chlrho tends to become 0, or undefined (0/0)
+         !chlrho:proportion or photosynthate directed towards chlorophyll biosynthesis (eq.4)
+         org%chlrho=Aupt%C/org%C /(apar%islope_perchl*I_Q      *org%QChl)
+         !  [-]    =         s-1 / gCm2/gChl/molQ *molQ/s/m2*gchl/gC
+         org%chlrho=min(org%chlrho,1.0_rk) !i.e., to ensure that chlrho doesn't exceed 1.0
+       else
+         org%chlrho=1.0_rk !at those very low light conditions, rho should become 1.0
+       end if
+       !partitioning of synthate towards chl production should be proportional to N quota, thus:
+       org%chlrho=org%chlrho*lim%N
+       !original:
+       !org%chlsynth=apar%Chl2Cmax * org%chlrho* Aupt%C     * 12.0_rk  ! ! (eq.3,4)
+       ! mgChl/m3/s=   mgChl/mgC  *     [-]    * mmolC/m3/s * 12mgC/mmolC
+       !introduce Chl2Cmin to set a lower bound as in ERSEM 15.06 (Butenschoen et al 2016)
+       org%chlsynth=(Chl2Cmin+(apar%Chl2Cmax-Chl2Cmin) * org%chlrho)  * Aupt%C     * 12.0_rk  ! (eq.3,4)
+       !write(*,*),'org%C,Aupt%C,org%chlrho',org%C,Aupt%C,org%chlrho
+   end select
    
   end subroutine 
 !
@@ -805,7 +866,7 @@ module gpm_common
 ! !IROUTINE: Light limitation 
 !
 ! !INTERFACE:
-   subroutine get_fI(org,apar,fT,env)
+   subroutine get_fI(org,apar,env)
 !
 ! !DESCRIPTION:
 ! Here, light limited growth is formulated.
@@ -814,11 +875,10 @@ module gpm_common
    implicit none
 !
 ! !INPUT PARAMETERS:
-   class(org_autotrophic)       :: org
+   class(org_autotrophic)        :: org
    type(type_GPMaut), intent(in) :: apar
-   real(rk), intent(in)          :: fT
    type(type_env),intent(in)     :: env
-   real(rk)                      :: fI,mumax
+   real(rk)                      :: mumax,Pmax,Idm,Idm_Q,I_Q
 !
 !EOP
 !-----------------------------------------------------------------------
@@ -827,35 +887,55 @@ module gpm_common
    !some formulations of light limitation depend on mumax [/d]
    !if the fixed stoich. is employed, just convert the units of vCmax[/s]
    !if the droop approach is used, vCmax is in fact V(@Q=Qinf). calculate mumax=vcmax*f(Q=Qmax)
-   if (apar%metIntSt .eq. 0) then
-     mumax=apar%vCmax*s2d
-   else if (apar%metIntSt .eq. 1) then
-     mumax=apar%vCmax*s2d*(_ONE_ - apar%QPmin/apar%QPmax)
-   end if
+   select case (apar%metIntSt)
+     case default 
+       mumax=apar%vCmax*s2d
+     case (1)
+       mumax=apar%vCmax*s2d*(_ONE_ - apar%QPmin/apar%QPmax)
+   end select
 
-   if (env%par .gt. 0.0) then
+   !if (env%par .gt. 0.0) then
     !mumax=max(1e-9,mumax0) !to avoid 0/0 when par=0
      select case (apar%metIresp)
       case default
         call apar%fatal_error('common.F90:get_fI','for '//trim(apar%name)// ' specified metIresp option is not available')
       case(1) !monod type, e.g., schwaderer et al
         org%fI=env%par/(env%par+mumax/apar%islope)
-      case(2) !with light inhibition type, e.g., schwaderer et al
-        org%fI=env%par/( env%par**2 *mumax/apar%islope/apar%Iopt**2+ env%par*(1-2*mumax/apar%islope/apar%Iopt) +mumax/apar%islope ) 
-      case(3) !tanh, eg. merico & oguz
-        org%fI=TANH(env%par*apar%islope)
-      case(4) ! Light acclimation formulation based on surface light intensity (Steele 1962)
-        org%fI=env%par/max(0.25*env%I0,apar%Imin) *exp(_ONE_-env%par/max(0.25*env%I0,apar%Imin))
-      !case (5) !todo:based on theta 
-      
-      ! EH light limitation
-      ! Iopt=get_Iopt()
-      ! fPAR(j,k,i) = par(j,k,i)/Iopt(j,k,i)*exp(one-par(j,k,i)/Iopt(j,k,i))
-       
+      case(10) !with light inhibition type, e.g., schwaderer et al
+        if (env%par .gt. 0.0) then
+         org%fI=env%par/( env%par**2 *mumax/apar%islope/apar%Iopt**2+ env%par*(1-2*mumax/apar%islope/apar%Iopt) +mumax/apar%islope ) 
+        else
+         org%fI=0.0 !when mumax=0 and par=0, fI can become 0/0=NaN
+        end if
+      case (2) ! based on Chl:C ratio, dailymean light (Geider et al 1997,1998)
+        Idm_Q=molqperday_per_W*env%Idm/s2d !W/m2 * mmq/d *d/s= molQ/s/m2
+        Pmax=org%vC_fTfnp
+        org%fI=1.0-exp(-apar%islope_perchl*org%QChl*Idm_Q/Pmax)
+        !             !gCm2/gChl/molQ  *  gChl/gC * molQ/s/m2 / (s) = [-]
+        !write(*,*)'common L862. metIresp: ',apar%met,'Idm:',env%Idm,'Idm_Q ',Idm_Q,'QChl:',org%QChl,'fI:',org%fI!
+        !Blackford: photoinhibition
+        !org%fI=(1.0-exp(-apar%islope_perchl*org%QChl*Idm_Q/Pmax))*exp(-apar%inhslope_perchl*org%QChl*Idm_Q/Pmax)
+      case (20) ! based on Chl:C ratio, instantaneous light (Geider et al 1997,1998)
+        if (env%par .gt. 0.0) then
+         I_Q=molqperday_per_W*env%par/s2d !W/m2 * mmq/d/m2 *d/s= molQ/s
+         Pmax=org%vC_fTfnp
+         org%fI=1.0-exp(-apar%islope_perchl*org%QChl*I_Q/Pmax)
+         !             !gCm2/gChl/molQ  *  gChl/gC * molQ/d/m2 / (d) = [-]
+         !write(*,*)'common L870. metIresp: ',apar%metIresp,'I:',env%par,'I_Q ',I_Q,'QChl:',org%QChl,'Pmax:',Pmax,'fI:',org%fI!
+        else
+         org%fI=0.0 !when mumax=0 and par=0, fI can become 0/0=NaN
+        end if
+        ! EH light limitation
+        ! Iopt=get_Iopt()
+        ! fPAR(j,k,i) = par(j,k,i)/Iopt(j,k,i)*exp(one-par(j,k,i)/Iopt(j,k,i))
+        !tanh, eg. merico & oguz
+        !org%fI=TANH(env%par*apar%islope)
+        ! Light acclimation formulation based on surface light intensity (Steele 1962)
+        !org%fI=env%par/max(0.25*env%I0,apar%Imin) *exp(_ONE_-env%par/max(0.25*env%I0,apar%Imin))
      end select
-   else
-     org%fI=0.0 !when mumax=0 and par=0, fI can become 0/0=NaN
-   end if
+   !else
+   !  org%fI=0.0 !when mumax=0 and par=0, fI can become 0/0=NaN
+   !end if
    
    end subroutine
 !EOC
