@@ -37,11 +37,13 @@ instances:
     long_name: EH-pelagic
     model: ecoham/abio_pel
     parameters:
+      Idm_met: 2              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.      # whether to resolve Si-cycle
       flux_diags: .true.      # whether to output flux diagnostics
       metCexc: 0              # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       metairsea: 2            # method to resolve air-sea fluxes; 0: no air-sea flux, 1: EH (O2); 2:ERGOM (O2)
       metairseaEH: 1          # EH-method to resolve the air-sea fluxes when metairsea=1
+      cwind: 2.0              # [m/s] constant wind speed (<0 implies it is provided by the driver)
       dom_kc : 0.01           # [m2/mmolC] sp. light ext. for doc.
       det1_kc : 0.02          # [m2/mmolC] sp. light ext. for detC.
       det2_kc : 0.02          # [m2/mmolC] sp. light ext. for det2C.
@@ -90,6 +92,7 @@ instances:
     long_name: GPM-diatoms
     model: gpm/phytoplankton
     parameters:
+      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .true.         # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
@@ -125,7 +128,7 @@ instances:
       C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
       Ksi : 1.0              # half sat. conc. for Si lim growth (if resolve_Si: .true)
       metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
-      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
     initialization:
       C : 1.06               # initial carbon
     coupling:
@@ -152,6 +155,7 @@ instances:
     long_name: GPM-diatoms
     model: gpm/phytoplankton
     parameters:
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .true.         # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
@@ -189,12 +193,13 @@ instances:
       C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
       Ksi : 1.0              # half sat. conc. for Si lim growth (if resolve_Si: .true)
       metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
-      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
     initialization:
       C : 1.0                # initial carbon
       P : 0.0145             # initial phosphorus
       N : 0.2                # initial nitrogen
     coupling:
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -218,6 +223,7 @@ instances:
     long_name: GPM-nanoflagellates
     model: gpm/phytoplankton
     parameters:
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   #whether the DOP is available for uptake
@@ -252,12 +258,13 @@ instances:
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
-      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
     initialization:
       C : 1.0               # initial carbon
       P : 0.011              # initial phosphorus
       N : 0.18               # initial nitrogen
     coupling:
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -278,6 +285,7 @@ instances:
     long_name: GPM-phaeocystis
     model: gpm/phytoplankton
     parameters:
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
@@ -312,12 +320,13 @@ instances:
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
-      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
     initialization:
       C : 1.0                # initial carbon
       P : 0.0145             # initial phosphorus
       N : 0.2                # initial nitrogen
     coupling:
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -338,6 +347,7 @@ instances:
     long_name: GPM-mixotrophs
     model: gpm/mixotroph
     parameters: 
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       fracaut: 0.5           # fraction of autotrophy
       metext: 0              # method for calculating light extinction. 0: C*kc
@@ -371,7 +381,7 @@ instances:
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: diag. from cloern95
-      C2Chl: 50.             # [gC/gChl] C:Chl ratio, if metchl=0 (fixed)
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
       rmn : 0.05             # excretion rate
       gmax : 2.0             # max. grazing rate
       Kz : 20.               # half sat. constant for grazing
@@ -389,6 +399,7 @@ instances:
       P : 0.0117           # initial phosphorus
       N : 0.15             # initial nitrogen
     coupling:
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus

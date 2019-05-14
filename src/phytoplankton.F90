@@ -78,6 +78,7 @@
    ! and are converted here to values per second.
    
    !General Parameters
+   call self%get_parameter(self%Idm_met, 'Idm_met',   '-',          'method to calculate daily average PAR',          default=0)
    call self%get_parameter(self%resolve_Si,  'resolve_Si',   '-',     'whether to resolve Si cycle',          default=.false.)
    call self%get_parameter(self%lim_Si,  'lim_Si',   '-',     'whether limited by Si',          default=.false.)
    
@@ -122,7 +123,7 @@
    call self%get_parameter(self%C2Si,     'C2Si',    'molC/molSi',  'molar C:Si ratio', default=5.76_rk)  !Brzezinski, 1985: 106/15=7.067
    call self%get_parameter(self%Ksi,      'Ksi',      'mmolSi/m^3',   'half-saturation Si concentration',  default=0.5_rk)
    call self%get_parameter(self%metchl,   'metchl', '-', 'method for representing chlorophyll', default=0)
-   call self%get_parameter(self%C2Chl,    'C2Chl',   'gC/gChl',   'gC:gChl ratio', default=50._rk)
+   call self%get_parameter(self%Chl2C,    'Chl2C',   'gChl/gC',   'gChl:gC ratio', default=0.02_rk)
    
    !call self%get_parameter(self%resolve_cal,  'resolve_cal',   '-',      'whether to resolve calcification',          default=.false.)
    !call self%get_parameter(self%C2Ccal,   'C2Ccal',   'molC/molC', 'molar ratio of organic to calcite C', default=5.76_rk)  !Brzezinski, 1985: 106/15=7.067
@@ -274,7 +275,14 @@
    call self%register_dependency(self%id_temp,standard_variables%temperature)
    call self%register_global_dependency(self%id_doy,standard_variables%number_of_days_since_start_of_the_year)
    call self%register_dependency(self%id_par,standard_variables%downwelling_photosynthetic_radiative_flux)
-   call self%register_dependency(self%id_I_0,standard_variables%surface_downwelling_photosynthetic_radiative_flux) 
+   call self%register_dependency(self%id_I_0,standard_variables%surface_downwelling_photosynthetic_radiative_flux)
+   if (self%Idm_met .eq. 1) then
+     call self%register_dependency(self%id_I0dm,'I0dm','W/m^2',       'daily mean I0')
+     !I0dm is a diagnostic variable provided by another module specified in the yamlaveraged')
+   else if (self%Idm_met .eq. 2) then
+     call self%register_dependency(self%id_pardm,'PARdm','W/m^2',       'daily mean PAR')
+     !PARdm is a diagnostic variable provided by another module specified in the yamlaveraged')
+   end if
 
    return
 
@@ -329,7 +337,14 @@
    _GET_(self%id_temp,env%temp)       ! temperature
    _GET_(self%id_par,env%par)         ! local photosynthetically active radiation
    _GET_HORIZONTAL_(self%id_I_0,env%I0)  ! surface short wave radiation
-
+   if (self%Idm_met .eq. 1) then
+     _GET_HORIZONTAL_(self%id_I0dm,env%Idm)  ! surface short wave radiation, daily output_time_step_averaged
+   else if (self%Idm_met .eq. 2) then
+     _GET_(self%id_pardm,env%Idm)  ! short wave radiation, daily output_time_step_averaged
+   else
+     env%Idm=-99.0_rk !should result in an error
+   end if
+   
    ! Debugging logic
    if (debug .and. (env%depth .lt. 1.0 .and. env%depth .gt. 0.0)) then
      debw=.true.

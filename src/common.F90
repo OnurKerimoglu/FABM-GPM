@@ -8,7 +8,8 @@ module gpm_common
    implicit none
 
    public
-
+   
+   real(rk),parameter :: molqperday_per_W=1.0_rk/0.4_rk ![W/m2 = 0.4 mol quanta/m2/d ] Cloern et al 1995
    real(rk),parameter :: CMass   = 12.011_rk
    real(rk),parameter :: qnRF = 14._rk/106._rk
    real(rk),parameter :: qpRF = 1._rk/106._rk
@@ -21,7 +22,7 @@ module gpm_common
    
    ! !PUBLIC DERIVED TYPES:
    type type_env
-     real(rk) :: temp,salt,doy,depth,zmax,I0,par,parmean
+     real(rk) :: temp,salt,doy,depth,zmax,I0,par,Idm
    end type
    
    !elements resolved
@@ -155,14 +156,14 @@ module gpm_common
      type (type_diagnostic_variable_id) :: id_MuClim_A,id_Plim,id_Nlim,id_Silim
      type (type_diagnostic_variable_id) :: id_Chl,id_QChl
      !type (type_diagnostic_variable_id) :: id_pc_o2o = pc_dic = CGain_A
-     type (type_dependency_id)          :: id_par,id_Chl_dep
-     type (type_horizontal_dependency_id)::id_I_0
+     type (type_dependency_id)          :: id_par,id_pardm,id_Chl_dep
+     type (type_horizontal_dependency_id)::id_I_0,id_I0dm
 
 !    Model parameters
      logical  :: resolve_Si,lim_Si,dop_allowed !,resolve_cal,resolve_carb
-     integer  :: metchl,metIresp,metCexc
+     integer  :: Idm_met,metchl,metIresp,metCexc
      real(rk) :: kchl,gam
-     real(rk) :: C2Si,C2Chl !,C2Ccal
+     real(rk) :: C2Si,Chl2C !,C2Ccal
      real(rk) :: vCmax,excess,Kp,Kno3,Knh4,Ksi
      real(rk) :: islope,Iopt,Imin
      real(rk) :: VPmax,VNmax
@@ -767,6 +768,7 @@ module gpm_common
    class(org_autotrophic)       :: org
    type(type_GPMaut), intent(in) :: apar
    type(type_env), intent(in)    :: env
+   real(rk)                      :: Idm_Q
 !
 !EOP
 !-----------------------------------------------------------------------
@@ -776,18 +778,21 @@ module gpm_common
      case default
        call apar%fatal_error('common.F90:get_fT','for '//trim(apar%name)// ' specified metchl option is not available')
      case (0)
-       org%QChl=1./apar%C2Chl * 12.0
-       !mgChl/mmolC = gChl/gC  * 12gC/1molC
-       org%Chl=org%C*org%QChl !mgChl
-     case (1) 
-       org%QChl=(0.003 + max(0.0,0.0154*exp(0.05*env%temp)*exp(-0.059*env%parmean)*org%limNP))*12.0
-       !todo: parmean=?
-       !aut%QChl=12*
-       org%Chl=org%C*org%QChl
+       org%QChl=apar%Chl2C !gChl:gC
+     case (1)  !empirical, Cloern et al. 1995
+       Idm_Q=molqperday_per_W*env%Idm !W/m2 * mmq/d *d/s= molQ/s/m2
+       org%QChl=0.003_rk + max(0.0_rk,0.0154_rk*exp(0.05_rk*env%temp)*exp(-0.059_rk*Idm_Q)*org%limNP) !mgChl/mgC
+       ! org%limNP= mu' (Cloern et al 1995, P1314 nutrient-limited growth rate normalized to the max. rate)
+       !write(*,*)'common L753. metchl: ',apar%metchl,'Idm: ',Idm,'QChl:',org%QChl
        
       !case(2) !Geider 1997
       !case(3) !IA
    end select
+   
+   select case (apar%metchl)
+     case (0,1)
+       org%Chl=org%C*12.0*org%QChl  !mmolC* 12mgC/mmolC *gChl/gC  = mgChl
+    end select
    
   end subroutine 
 !
