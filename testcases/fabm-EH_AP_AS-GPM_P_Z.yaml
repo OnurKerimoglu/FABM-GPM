@@ -346,7 +346,7 @@ instances:
       det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
       det2N : EH_abioP/det2N      # detrital nitrogen -fast sinking
   GPM_mixo:
-    use: .false.
+    use: .true.
     long_name: GPM-mixotrophs
     model: gpm/mixotroph
     parameters: 
@@ -396,7 +396,9 @@ instances:
       prey1pref : 0.2        # preference factor for prey1
       prey2pref : 0.2        # preference factor for prey2
       prey3pref : 0.4        # preference factor for prey3
+      prey3hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
       prey4pref : 0.2        # preference factor for prey4
+      prey4hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
     initialization:
       Chl: 0.36            # [mgChl] initial chlorophyll =XmgChl/gC*12gC/molC
       C : 1.0              # initial carbon
@@ -430,11 +432,13 @@ instances:
       prey3C : GPM_nf/C           # C of grazing target
       prey3P : GPM_nf/P           # P of grazing target
       prey3N : GPM_nf/N           # N of grazing target
+      prey3Chl : GPM_nf/Chl       # Chl of grazing target
       prey4C : GPM_pha/C          # C of grazing target
       prey4P : GPM_pha/P          # P of grazing target
       prey4N : GPM_pha/N          # N of grazing target
+      prey4Chl : GPM_pha/Chl      # Chl of grazing target
   GPM_miczoo:
-    use: .false.
+    use: .true.
     long_name: GPM-microzooplankton
     model: gpm/zooplankton
     parameters: 
@@ -466,8 +470,11 @@ instances:
       prey1pref : 0.1        # preference factor for prey1
       prey2pref : 0.1        # preference factor for prey2
       prey3pref : 0.3        # preference factor for prey3
+      prey3hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
       prey4pref : 0.2        # preference factor for prey4
+      prey4hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
       prey5pref : 0.3        # preference factor for prey5
+      prey5hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
     initialization:
       C : 1.0                # initial carbon
       P : 0.0117             # initial phosphorus
@@ -497,14 +504,17 @@ instances:
       prey3C : GPM_nf/C         # C of grazing target
       prey3P : GPM_nf/P         # P of grazing target
       prey3N : GPM_nf/N         # N of grazing target
+      prey3Chl : GPM_nf/Chl     # Chl of grazing target
       prey4C : GPM_pha/C        # C of grazing target
       prey4P : GPM_pha/P        # P of grazing target
       prey4N : GPM_pha/N        # N of grazing target
+      prey4Chl : GPM_pha/Chl    # Chl of grazing target
       prey5C : GPM_mixo/C       # C of grazing target
       prey5P : GPM_mixo/P       # P of grazing target
       prey5N : GPM_mixo/N       # N of grazing target
+      prey5Chl : GPM_mixo/Chl   # Chl of grazing target
   GPM_meszoo:
-    use: .false.
+    use: .true.
     long_name: GPM-mesozooplankton
     model: gpm/zooplankton
     parameters: 
@@ -535,8 +545,11 @@ instances:
       num_prey : 4           # number of prey targets
       prey1pref : 0.1        # preference factor for prey1
       prey1C2Si : 5.76       # Si:C ratio of prey1
+      prey1hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
       prey2pref : 0.1        # preference factor for prey2
+      prey2hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
       prey3pref : 0.3        # preference factor for prey3
+      prey3hasChl : .true.   # whether prey has dynamic Chlorophyll chlorophyll
       prey4pref : 0.5        # preference factor for prey4
     initialization:
       C : 1.0                # initial carbon
@@ -561,12 +574,15 @@ instances:
       prey1C : GPM_diat/C         # C of grazing target
       prey1P : GPM_diat/P         # P of grazing target
       prey1N : GPM_diat/N         # N of grazing target
+      prey1Chl : GPM_diat/Chl       # Chl of grazing target
       prey2C : GPM_pha/C          # C of grazing target
       prey2P : GPM_pha/P          # P of grazing target
       prey2N : GPM_pha/N          # N of grazing target
+      prey2Chl : GPM_pha/Chl       # Chl of grazing target
       prey3C : GPM_mixo/C         # C of grazing target
       prey3P : GPM_mixo/P         # P of grazing target
       prey3N : GPM_mixo/N         # N of grazing target
+      prey3Chl : GPM_mixo/Chl       # Chl of grazing target
       prey4C : GPM_miczoo/C       # C of grazing target
       prey4P : GPM_miczoo/P       # P of grazing target
       prey4N : GPM_miczoo/N       # N of grazing target

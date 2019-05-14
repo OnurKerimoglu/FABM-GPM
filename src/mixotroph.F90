@@ -178,7 +178,14 @@
      if (self%prpar(i)%pref .lt. 0.0) then !if pref<0, real pref will be f(QPr(i)
        call self%register_dependency(self%prpar(i)%id_QNr,'prey'//trim(istr)//'QNr')
      end if
-     !Chl: todo
+     !Chl: 
+     call self%get_parameter(self%prpar(i)%hasChl,'prey'//trim(istr)//'hasChl','-','whether prey'// trim(istr)//' has Chl',default=.false.)
+     if (self%prpar(i)%hasChl) then
+       write(*,*)'    prey'//trim(istr)//' should have a Chl state variable to be coupled'
+       call self%register_state_dependency(self%prpar(i)%id_Chl,'prey'//trim(istr)//'Chl')
+     else 
+       write(*,*)'    prey'//trim(istr)//' has no Chl state variable'
+     end if
      if (self%resolve_Si) then
        !when C2Si is not explicitly provided, assume the prey is non-diatom, so Si2C=0 (C2Si=0 will mean the same)
        call self%get_parameter(self%prpar(i)%C2Si,'prey'//trim(istr)//'C2Si','-','C:Si ratio of prey-'//trim(istr),default=0.0_rk)
@@ -328,7 +335,6 @@
                                           output=output_time_step_averaged)
     call self%register_diagnostic_variable(self%id_asefN,'asef_N','-',  'assimilation efficiency of N', &
                                           output=output_time_step_averaged)
-   
     if (self%resolve_Si) then
      call self%register_diagnostic_variable(self%id_IngunasSi,'Ingunas_Si','/d',  'unassimilated fraction of sp. ingestion of Si', &
                                           output=output_time_step_averaged) 
@@ -399,10 +405,12 @@
     allocate(prdat%C(self%num_prey))
     allocate(prdat%P(self%num_prey))
     allocate(prdat%N(self%num_prey))
+    allocate(prdat%Chl(self%num_prey))
     allocate(prdat%Si(self%num_prey))
     allocate(prdat%grC(self%num_prey))
     allocate(prdat%grP(self%num_prey))
     allocate(prdat%grN(self%num_prey))
+    allocate(prdat%grChl(self%num_prey))
     allocate(prdat%grSi(self%num_prey))
     allocate(prdat%Qr(self%num_prey))
     allocate(prdat%QPr(self%num_prey))
@@ -493,6 +501,7 @@
     prdat%C=0.0
     prdat%P=0.0
     prdat%N=0.0
+    prdat%Chl=0.0
     prdat%Si=0.0
     prdat%QPr=0.0
     prdat%QNr=0.0
@@ -521,7 +530,11 @@
          prdat%Qr(i)=1.0
        end if
      !end if
-     !Chl: Query id_Chl (if_dynamic?)
+     !Chl:
+     if (self%prpar(i)%hasChl) then
+       !TODO: if id_Chl present?
+       _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
+     end if
      !Si:
      if (self%resolve_Si) then
        if (self%prpar(i)%C2Si .gt. 0.0) then
@@ -636,6 +649,10 @@
      !TODO: if id_N present?
        _SET_ODE_(self%prpar(i)%id_N,-prdat%grN(i)*org%C) !molN/molC/d *molC/m3 =molP/m3/d
      !end if
+     !Chl
+     if (self%prpar(i)%hasChl) then
+       _SET_ODE_(self%prpar(i)%id_Chl,-prdat%grChl(i)*org%C) !molChl/molC/d *molC/m3 =molChl/m3/d
+     end if
     END DO
    end if
    
@@ -710,9 +727,9 @@
     _SET_DIAGNOSTIC_(self%id_NH4gain_A, Aupt%NH4*s2d)
     _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
     _SET_DIAGNOSTIC_(self%id_diagChl, org%Chl)
-   if (self%metchl .ne. 0) then
-     _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
-   end if
+    if (self%metchl .ne. 0) then
+      _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
+    end if
    end if
    !Heterotrophy
    if (self%fracaut .lt. 1.0) then

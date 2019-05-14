@@ -94,10 +94,11 @@ module gpm_common
    
    !structure to collect prey parameters (variable identifiers, stoichiometric ratios, etc)
    type,public                           :: prey_pars
-      type (type_state_variable_id)      :: id_C,id_P,id_N
+      type (type_state_variable_id)      :: id_C,id_P,id_N,id_Chl
       type (type_dependency_id)          :: id_QPr,id_QNr
       type (type_diagnostic_variable_id) :: id_realpref
       real(rk)                           :: pref,C2Si
+      logical                            :: hasChl
    end type
    
    !structure to collect prey data
@@ -107,12 +108,12 @@ module gpm_common
       real(rk),dimension(:),allocatable :: C
       real(rk),dimension(:),allocatable :: P      
       real(rk),dimension(:),allocatable :: N
-      !real(rk),dimension(:),allocatable :: Chl !when dynamic
+      real(rk),dimension(:),allocatable :: Chl
       real(rk),dimension(:),allocatable :: Si
       real(rk),dimension(:),allocatable :: grC
       real(rk),dimension(:),allocatable :: grP
       real(rk),dimension(:),allocatable :: grN
-      !real(rk),dimension(:),allocatable :: grChl
+      real(rk),dimension(:),allocatable :: grChl
       real(rk),dimension(:),allocatable :: grSi
       real(rk),dimension(:),allocatable :: Qr
       real(rk),dimension(:),allocatable :: QPr
@@ -274,7 +275,10 @@ module gpm_common
       prdat%grC(i)       = gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
       prdat%grP(i)       = prdat%grC(i)         * prdat%P(i)/prdat%C(i)  !molPprey/molCpred/d
       prdat%grN(i)       = prdat%grC(i)         * prdat%N(i)/prdat%C(i)  !molNprey/molCpred/d
-      !prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
+      if (prpar(i)%hasChl) then
+        !write(*,*),' '//trim(mpar%name)//' prey#',i,'grChl:',prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)
+        prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
+      end if
       if (mpar%resolve_Si) then
         prdat%grSi(i)      = prdat%grC(i)       * prdat%Si(i)/prdat%C(i) !molChlprey/molChlpred/d
         !write(*,*),' '//trim(mpar%name)//' prey#',i,'prSi,prC,grSi',prdat%Si(i),prdat%C(i),prdat%grSi(i)
