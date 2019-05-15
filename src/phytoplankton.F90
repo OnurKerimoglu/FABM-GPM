@@ -468,6 +468,7 @@
    !N
    _SET_ODE_(self%id_DINO3,-Aupt%NO3) !*org%lim_no3/Alim%N)
    _SET_ODE_(self%id_DINH4,-Aupt%NH4) !*org%lim_nh4/Alim%N) 
+   !write(*,*)'upt:',Aupt%NO3+Aupt%NH4,'build:',Aupt%C/self%C2N,'diff:',Aupt%NO3+Aupt%NH4-Aupt%C/self%C2N
    !Si
    if (self%lim_Si) then
      _SET_ODE_(self%id_DISi,-Aupt%Si)

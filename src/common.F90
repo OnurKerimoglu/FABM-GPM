@@ -572,10 +572,10 @@ module gpm_common
      !when no3 and nh4 are not resolved:
      !upt%N = org%C*fT*apar%VNmax*(1.0-org%QNr)*org%lim_N ![mmol/m3/d]
      !NO3,NH4 seperate:
-     upt%NO3 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_no3
-     upt%NH4 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_nh4
+     upt%NO3 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_no3 / (org%lim_no3+org%lim_nh4)
+     upt%NH4 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_nh4 / (org%lim_no3+org%lim_nh4)
    else
-     call apar%fatal_error('common.F90:get_fI','for '//trim(apar%name)// ' specified metIntSt option is not available')
+     call apar%fatal_error('common.F90:get_nut_QLU','for '//trim(apar%name)// ' specified metIntSt option is not available')
    end if
    
    org%limNP=min(lim%P,lim%N)
@@ -911,7 +911,7 @@ module gpm_common
         else
          org%fI=0.0 !when mumax=0 and par=0, fI can become 0/0=NaN
         end if
-      case (2) ! based on Chl:C ratio, dailymean light (Geider et al 1997,1998)
+      case (2) ! based on Chl:C ratio, as in Cloern 1995 and Geider et al 1997, based on dailymean light
         Idm_Q=molqperday_per_W*env%Idm/s2d !W/m2 * mmq/d *d/s= molQ/s/m2
         Pmax=org%vC_fTfnp
         org%fI=1.0-exp(-apar%islope_perchl*org%QChl*Idm_Q/Pmax)
@@ -1003,8 +1003,9 @@ module gpm_common
     !when NO3 and NH3 are not seperately resolved
     !upt%N= vC_fTfIfN * org%QN !/apar%%C2N
     !when NO3 and NH3 are resolved:
-    upt%NO3=upt%C*org%QN*org%lim_no3 !in EH, lim_no3=Q1x 
-    upt%NH4=upt%C*org%QN*org%lim_nh4 !in EH, lim_nh4=Q21
+    upt%NO3=upt%C*org%QN*org%lim_no3/org%lim_N !in EH, lim_no3=Q1x 
+    upt%NH4=upt%C*org%QN*org%lim_nh4/org%lim_N !in EH, lim_nh4=Q21
+    !write(*,*)'upt:',upt%NO3+upt%NH4,'build:',upt%C/apar%C2N,'diff:',upt%NO3+upt%NH4-upt%C/apar%C2N
    end if
    !uptake of Si and Ccal is based on C uptake anyway.
    if (apar%lim_Si) then
