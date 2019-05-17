@@ -6,9 +6,6 @@
 ! !MODULE: gpm_mixotroph --- generic mixotroph model
 !
 !TODO:
-! - check if mixotroph can access the diagnotic variables of other modules
-! - feed on constant stoichiometry prey via C2N and C2P parameters (?)
-! - self%resolve_Si -> general switch (aux)
 !
 ! !INTERFACE:
    module gpm_mixotroph
@@ -166,26 +163,19 @@
      call self%get_parameter(self%prpar(i)%pref,'prey'//trim(istr)//'pref','-','preference for prey-'//trim(istr))
      !C
      call self%register_state_dependency(self%prpar(i)%id_C,'prey'//trim(istr)//'C')
+     
+     ! logic: access coupled the state variable 'prey(i)X', and parameter 'prey(i)C2X'. If prey(i)X is not available, prey(i)C2X will be used to calc X
      !P
-     !todo: s.1) try to access self%prpar(i)%id_P, if available, setC2P=0. If not available, calc P from C2P
-     !      s.2) try to access C2P, if not provided, set C2P=0, then try to access id_P 
-     call self%register_state_dependency(self%prpar(i)%id_P,'prey'//trim(istr)//'P')
-     if (self%prpar(i)%pref .lt. 0.0) then !if pref<0, real pref will be f(QPr(i)
-       call self%register_dependency(self%prpar(i)%id_QPr,'prey'//trim(istr)//'QPr')
-     end if
+     call self%register_state_dependency(self%prpar(i)%id_P,'prey'//trim(istr)//'P','mmolP/m^3','bound phosphorus in prey'//trim(istr), required=.false.)
+     call self%get_parameter(self%prpar(i)%C2P, 'prey'//trim(istr)//'C2P',     '-',       'prey'//trim(istr)//' C:P ratio',  default=-1.0_rk)
+
      !N
-     call self%register_state_dependency(self%prpar(i)%id_N,'prey'//trim(istr)//'N')
-     if (self%prpar(i)%pref .lt. 0.0) then !if pref<0, real pref will be f(QPr(i)
-       call self%register_dependency(self%prpar(i)%id_QNr,'prey'//trim(istr)//'QNr')
-     end if
-     !Chl: 
-     call self%get_parameter(self%prpar(i)%hasChl,'prey'//trim(istr)//'hasChl','-','whether prey'// trim(istr)//' has Chl',default=.false.)
-     if (self%prpar(i)%hasChl) then
-       write(*,*)'    prey'//trim(istr)//' should have a Chl state variable to be coupled'
-       call self%register_state_dependency(self%prpar(i)%id_Chl,'prey'//trim(istr)//'Chl')
-     else 
-       write(*,*)'    prey'//trim(istr)//' has no Chl state variable'
-     end if
+     call self%register_state_dependency(self%prpar(i)%id_N,'prey'//trim(istr)//'N','mmolN/m^3','bound nitrogen in prey'//trim(istr), required=.false.)
+     call self%get_parameter(self%prpar(i)%C2N, 'prey'//trim(istr)//'C2N',     '-',       'prey'//trim(istr)//' C:N ratio',  default=-1.0_rk)
+     
+     !Chl
+     call self%register_state_dependency(self%prpar(i)%id_Chl,'prey'//trim(istr)//'Chl','mg/m^3','bound Chlorophyll in prey'//trim(istr), required=.false.)
+     
      if (self%resolve_Si) then
        !when C2Si is not explicitly provided, assume the prey is non-diatom, so Si2C=0 (C2Si=0 will mean the same)
        call self%get_parameter(self%prpar(i)%C2Si,'prey'//trim(istr)//'C2Si','-','C:Si ratio of prey-'//trim(istr),default=0.0_rk)
@@ -417,8 +407,6 @@
     allocate(prdat%QNr(self%num_prey))
    end if
    
-   !TODO: resolve the case for metIntSt=0 of the prey?
-   !TODO: query prey%id_N, idP,id_Si instead of resolve_N,P,Si
    !prdat: use dim property (?) instead of allocatable?
    
 !EOP
@@ -507,40 +495,46 @@
     prdat%QNr=0.0
     prdat%Qr=0.0 !this is min(QPr,QNr)
     DO i=1,self%num_prey
+     write (istr,'(i0)') i
      !C
      _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
      !P
-     !TODO: if id_P present?
+     if (_AVAILABLE_(self%prpar(i)%id_P)) then
        _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
-       !if pref(i)<0, then pref=f(Qr(i))
-       if (self%prpar(i)%pref .lt. 0.0) then
-         _GET_(self%prpar(i)%id_QPr,prdat%QPr(i))
-       else 
-         prdat%Qr(i)=1.0
+     else
+       if (self%prpar(i)%C2P .lt. 0.0_rk) then
+         call self%fatal_error('gpm_mixotroph_do','for prey'//trim(istr)//', no explicit P variable was coupled, or no (>0) C2P par was provided')
        end if
-     !end if
+       prdat%P(i)=prdat%C(i) / self%prpar(i)%C2P
+     end if
      !N
-     !TODO: if id_N present?
+     if (_AVAILABLE_(self%prpar(i)%id_N)) then
        _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
-       !if pref(i)<0, then pref=f(Qr(i))
-       if (self%prpar(i)%pref .lt. 0.0) then !default=0.0, which means no Si in prey
-         _GET_(self%prpar(i)%id_QNr,prdat%QNr(i))
-         prdat%Qr(i)=min(prdat%QPr(i),prdat%QNr(i))
-       else 
-         prdat%Qr(i)=1.0
+     else
+       if (self%prpar(i)%C2N .lt. 0.0_rk) then
+         call self%fatal_error('gpm_mixotroph_do','for prey'//trim(istr)//', no explicit N variable was coupled, or no (>0) C2N par was provided')
        end if
-     !end if
+       prdat%N(i)=prdat%C(i) / self%prpar(i)%C2N
+     end if
+     
+     !if pref(i)<0, then pref=f(Qr(i))
+     if (self%prpar(i)%pref .lt. 0.0) then !default=0.0, which means no Si in prey
+       _GET_(self%prpar(i)%id_QPr,prdat%QPr(i))
+       _GET_(self%prpar(i)%id_QNr,prdat%QNr(i))
+       prdat%Qr(i)=min(prdat%QPr(i),prdat%QNr(i))
+     end if
+
      !Chl:
-     if (self%prpar(i)%hasChl) then
-       !TODO: if id_Chl present?
+     prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
+     if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
        _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
      end if
+     
      !Si:
+     prdat%Si(i)=0.0_rk
      if (self%resolve_Si) then
        if (self%prpar(i)%C2Si .gt. 0.0) then
          prdat%Si(i)=prdat%C(i)/self%prpar(i)%C2Si
-       else
-         prdat%Si(i)=0.0_rk
        end if
        !write(*,*),'prey#',i,' c2si,C,Si:',self%prpar(i)%C2Si,prdat%C(i),prdat%Si(i)
      end if
@@ -560,7 +554,7 @@
    ! Autotrophy
    if (self%fracaut .gt. 0.0) then
      !Nutrient quotas, limitation and uptake
-     !todo: split the get_nutQ 
+
      call org%get_nut_QLU(self%type_GPMaut,fT,di,dom,Alim,Aupt)
      !write(*,*)'N: lim%P,lim%N,upt%P,upt%N:',Alim%P,Alim%N !,Aupt%P*s2d,Aupt%N*s2d
    
@@ -643,14 +637,15 @@
      !C
      _SET_ODE_(self%prpar(i)%id_C,-prdat%grC(i)*org%C) !molC/molC/d *molC/m3 =molC/m3/d !*(1.0-self%fracaut)
      !P
-     !TODO: if id_P present?
+     if (_AVAILABLE_(self%prpar(i)%id_P)) then
        _SET_ODE_(self%prpar(i)%id_P,-prdat%grP(i)*org%C) !molP/molC/d *molC/m3 =molP/m3/d
-     !end if
-     !TODO: if id_N present?
+     end if
+     !N
+     if (_AVAILABLE_(self%prpar(i)%id_N)) then
        _SET_ODE_(self%prpar(i)%id_N,-prdat%grN(i)*org%C) !molN/molC/d *molC/m3 =molP/m3/d
-     !end if
+     end if
      !Chl
-     if (self%prpar(i)%hasChl) then
+     if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
        _SET_ODE_(self%prpar(i)%id_Chl,-prdat%grChl(i)*org%C) !molChl/molC/d *molC/m3 =molChl/m3/d
      end if
     END DO

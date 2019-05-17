@@ -59,7 +59,7 @@ instances:
       rhoN : 0.1              # [/d] Direct DOM rem. (will be set to 0 if resolve_bac)
       rhoP : 0.1              # [/d] Direct DON rem. (will be set to 0 if resolve_bac)
       xknit: 0.02             # Nitrificaiton rate
-      resolve_bac: .false.    # whether to resolve bacterial remineralization
+      resolve_bac: .false.     # whether to resolve bacterial remineralization
       b_exc : 0.2             # excretion rate of bac
       b_v : 0.5               # max upt rate of bac
       b_xk4: 0.2              # half sat conc for DIN upt of bac
@@ -89,56 +89,51 @@ instances:
       det2Si : 0.15           # initial detrital silica
   GPM_diat:
     use: .true.
-    long_name: GPM-diatoms
+    long_name: GPM_fixed-diatom
     model: gpm/phytoplankton
     parameters:
-      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .true.         # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
-      metext: 0              # method for calculating light extinction. 0: C*kc; 1: chl*kchl
-      kc: 0.00453            # C-specific light ext. coefficient
-      kchl: 0.023            # Chl-specific light ext. coefficient                  
-      metvel: 0              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : -0.5               # vertical velocity (<0 for sinking)
+      metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
+      kc: 0.00453            #C-specific light ext. coefficient
+      kchl: 0.023            #Chl-specific light ext. coefficient                  
+      metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      w : 0.0               # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
       frac_d2x: 0.15         # fraction of mortality channeled to fast sinking detritus
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.0145         # max. P:C ratio (if metIntSt=1)
-      QPmin : 0.00145        # min. P:C ratio (if metIntSt=1)
-      QNmax : 0.2            # max. N:C ratio (if metIntSt=1)
-      QNmin : 0.05           # min. N:C ratio (if metIntSt=1)
+      #QPmax : 0.0145         # max. P:C ratio (if metIntSt=1)
+      #QPmin : 0.00145        # min. P:C ratio (if metIntSt=1)
+      #QNmax : 0.2            # max. N:C ratio (if metIntSt=1)
+      #QNmin : 0.05           # min. N:C ratio (if metIntSt=1)
       gam : 0.05             # exudation fraction of the c/n/p taken up
       vCmax : 1.5            # max. C uptake rate (a.k.a. 'growth rate')
-      VPmax : 0.15           # max. P uptake rate (if metIntSt=1)
-      VNmax : 2.0            # max. N uptake rate (if metIntSt=1)
+      #VPmax : 0.15           # max. P uptake rate (if metIntSt=1)
+      #VNmax : 2.0            # max. N uptake rate (if metIntSt=1)
       Kp : 0.2               # half sat. conc. for P uptake 
       Kno3 : 1.5             # half sat. conc. for NO3 uptake 
-      Knh4 : 0.5             # half sat. conc. for NH4 uptake  
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      Knh4 : 0.5             # half sat. conc. for NH4 uptake 
+      metIresp : 2           # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
-      Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
-      excess: 0.5            # excess carbon assimilation fraction
+      excess: 0.0            # excess carbon assimilation fraction
       C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
       Ksi : 1.0              # half sat. conc. for Si lim growth (if resolve_Si: .true)
-      metchl: 20             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
-      Chl: 0.36            # [mgChl] initial chlorophyll =XmgChl/gC*12gC/molC
-      C : 1.0                # initial carbon
-      P : 0.0145             # initial phosphorus
-      N : 0.2                # initial nitrogen
+      C : 1.06               # initial carbon
     coupling:
-      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -161,13 +156,13 @@ instances:
     long_name: GPM-nanoflagellates
     model: gpm/phytoplankton
     parameters:
-      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   #whether the DOP is available for uptake
       metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
       kc: 0.00453            #C-specific light ext. coefficient
-      kchl: 0.023            #Chl-specific light ext. coefficient                  
+      #kchl: 0.023            #Chl-specific light ext. coefficient                  
       metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : 0.0                # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
@@ -175,36 +170,33 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.011          # max. P:C ratio (if metIntSt=1)
-      QPmin : 0.00155        # min. P:C ratio (if metIntSt=1)
-      QNmax : 0.18           # max. N:C ratio (if metIntSt=1)
-      QNmin : 0.07           # min. N:C ratio (if metIntSt=1)
+      #QPmax : 0.011          # max. P:C ratio (if metIntSt=1)
+      #QPmin : 0.00155        # min. P:C ratio (if metIntSt=1)
+      #QNmax : 0.18           # max. N:C ratio (if metIntSt=1)
+      #QNmin : 0.07           # min. N:C ratio (if metIntSt=1)
       gam : 0.05             # exudation fraction of the c/n/p taken up
       vCmax : 1.2            # max. C uptake rate (a.k.a. 'growth rate')
-      VPmax : 0.2            # max. P uptake rate (if metIntSt=1)
-      VNmax : 2.5            # max. P uptake rate (if metIntSt=1)
+      #VPmax : 0.2            # max. P uptake rate (if metIntSt=1)
+      #VNmax : 2.5            # max. P uptake rate (if metIntSt=1)
       Kp : 0.1               # half sat. conc. for P uptake 
       Kno3 : 1.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.4             # half sat. conc. for NH4 uptake 
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 2           # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
-      Iopt : 40              # optimal light intensity (if lightresp==10)
+      #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
-      metchl: 20             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
-      Chl: 0.36            # [mgChl] initial chlorophyll =XmgChl/gC*12gC/molC
       C : 1.0               # initial carbon
-      P : 0.011              # initial phosphorus
-      N : 0.18               # initial nitrogen
     coupling:
-      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -225,7 +217,7 @@ instances:
     long_name: GPM-phaeocystis
     model: gpm/phytoplankton
     parameters:
-      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
@@ -239,36 +231,33 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.0145         # max. P:C ratio (if metIntSt=1)
-      QPmin : 0.00145        # min. P:C ratio (if metIntSt=1)
-      QNmax : 0.2            # max. N:C ratio (if metIntSt=1)
-      QNmin : 0.05           # min. N:C ratio (if metIntSt=1)
+      #QPmax : 0.0145         # max. P:C ratio (if metIntSt=1)
+      #QPmin : 0.00145        # min. P:C ratio (if metIntSt=1)
+      #QNmax : 0.2            # max. N:C ratio (if metIntSt=1)
+      #QNmin : 0.05           # min. N:C ratio (if metIntSt=1)
       gam : 0.05             # exudation fraction of the c/n/p taken up
       vCmax : 0.8            # max. C uptake rate (a.k.a. 'growth rate')
-      VPmax : 0.1            # max. P uptake rate (if metIntSt=1)
-      VNmax : 1.0            # max. P uptake rate (if metIntSt=1)
+      #VPmax : 0.1            # max. P uptake rate (if metIntSt=1)
+      #VNmax : 1.0            # max. P uptake rate (if metIntSt=1)
       Kp : 0.25              # half sat. conc. for P uptake 
       Kno3 : 2.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.7             # half sat. conc. for NH4 uptake 
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 2           # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
-      Iopt : 40              # optimal light intensity (if lightresp==10)
+      #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
-      metchl: 20             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      metchl: 1             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
-      Chl: 0.36            # [mgChl] initial chlorophyll =XmgChl/gC*12gC/molC
       C : 1.0                # initial carbon
-      P : 0.0145             # initial phosphorus
-      N : 0.2                # initial nitrogen
     coupling:
-      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -289,7 +278,7 @@ instances:
     long_name: GPM-mixotrophs
     model: gpm/mixotroph
     parameters: 
-      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       fracaut: 0.5           # fraction of autotrophy
       metext: 0              # method for calculating light extinction. 0: C*kc
@@ -302,29 +291,29 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.012          # max. P:C ratio (if resolve_P: .true)
-      QPmin : 0.0024         # min. P:C ratio (if resolve_P: .true)
-      QNmax : 0.15           # max. N:C ratio (if resolve_N: .true)
-      QNmin : 0.03           # min. N:C ratio (if resolve_N: .true)
+      #QPmax : 0.012          # max. P:C ratio (if resolve_P: .true)
+      #QPmin : 0.0024         # min. P:C ratio (if resolve_P: .true)
+      #QNmax : 0.15           # max. N:C ratio (if resolve_N: .true)
+      #QNmin : 0.03           # min. N:C ratio (if resolve_N: .true)
       gam : 0.05             # exudation fraction of the c/n/p taken up
       vCmax : 1.5            # max. C uptake rate (a.k.a. 'growth rate')
-      VPmax : 0.1            # max. P uptake rate (if metIntSt=1)
-      VNmax : 1.0            # max. P uptake rate (if metIntSt=1)
+      #VPmax : 0.1            # max. P uptake rate (if metIntSt=1)
+      #VNmax : 1.0            # max. P uptake rate (if metIntSt=1)
       Kp : 0.3               # half sat. conc. for P uptake 
       Kno3 : 2.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.8             # half sat. conc. for NH4 uptake 
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 2          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
-      Iopt : 40              # optimal light intensity (if lightresp==10)
+      #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
-      metchl: 20             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
       rmn : 0.05             # excretion rate
       gmax : 2.0             # max. grazing rate
       Kz : 20.               # half sat. constant for grazing
@@ -335,14 +324,15 @@ instances:
       num_prey : 3           # number of prey targets
       prey1pref : 0.3        # preference factor for prey1
       prey2pref : 0.3        # preference factor for prey2
+      prey2C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey2C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey3pref : 0.4        # preference factor for prey3
+      prey3C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey3C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
     initialization:
-      Chl: 0.36            # [mgChl] initial chlorophyll =XmgChl/gC*12gC/molC
       C : 1.0              # initial carbon
-      P : 0.0117           # initial phosphorus
-      N : 0.15             # initial nitrogen
     coupling:
-      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -364,16 +354,7 @@ instances:
       prey1P : EH_abioP/det1P     # P of grazing target
       prey1N : EH_abioP/det1N     # N of grazing target
       prey2C : GPM_nf/C           # C of grazing target
-      prey2P : GPM_nf/P           # P of grazing target
-      prey2N : GPM_nf/N           # N of grazing target
-      prey2Chl : GPM_nf/Chl       # Chl of grazing target
       prey3C : GPM_pha/C          # C of grazing target
-      prey3P : GPM_pha/P          # P of grazing target
-      prey3N : GPM_pha/N          # N of grazing target
-      prey3Chl : GPM_pha/Chl      # Chl of grazing target
-      #prey4C : EH_abioP/bacC      # C of grazing target
-      #prey4P : EH_abioP/bacP      # P of grazing target
-      #prey4N : EH_abioP/bacN      # N of grazing target
   GPM_miczoo:
     use: .true.
     long_name: GPM-microzooplankton
@@ -389,13 +370,13 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.0117         # max. P:C ratio (if resolve_P: .true)
-      QPmin : 0.0117         # min. P:C ratio (if resolve_P: .true)
-      QNmax : 0.15           # max. N:C ratio (if resolve_N: .true)
-      QNmin : 0.15           # min. N:C ratio (if resolve_N: .true)
+      #QPmax : 0.0117         # max. P:C ratio (if resolve_P: .true)
+      #QPmin : 0.0117         # min. P:C ratio (if resolve_P: .true)
+      #QNmax : 0.15           # max. N:C ratio (if resolve_N: .true)
+      #QNmin : 0.15           # min. N:C ratio (if resolve_N: .true)
       rmn : 0.05             # excretion rate
       gmax : 2.              # max. grazing rate
       Kz : 20.               # half sat. constant for grazing
@@ -406,13 +387,17 @@ instances:
       num_prey : 4           # number of prey targets
       prey1pref : 0.1        # preference factor for prey1
       prey2pref : 0.1        # preference factor for prey2
+      prey2C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey2C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey3pref : 0.3        # preference factor for prey3
+      prey3C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey3C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey4pref : 0.2        # preference factor for prey4
+      prey4C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey4C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       #prey5pref : 0.3        # preference factor for prey5
     initialization:
       C : 1.0                # initial carbon
-      P : 0.0117             # initial phosphorus
-      N : 0.15               # initial nitrogen
     coupling:
       O2  : EH_abioP/O2         # pelagic O2
       DIC : EH_abioP/DIC        # dissolved inorganic carbon
@@ -433,17 +418,8 @@ instances:
       prey1P : EH_abioP/det1P   # P of grazing target
       prey1N : EH_abioP/det1N   # N of grazing target
       prey2C : GPM_nf/C         # C of grazing target
-      prey2P : GPM_nf/P         # P of grazing target
-      prey2N : GPM_nf/N         # N of grazing target
-      prey2Chl : GPM_nf/Chl     # Chl of grazing target
       prey3C : GPM_pha/C        # C of grazing target
-      prey3P : GPM_pha/P        # P of grazing target
-      prey3N : GPM_pha/N        # N of grazing target
-      prey3Chl : GPM_pha/Chl    # Chl of grazing target
       prey4C : GPM_mixo/C       # C of grazing target
-      prey4P : GPM_mixo/P       # P of grazing target
-      prey4N : GPM_mixo/N       # N of grazing target
-      prey4Chl : GPM_mixo/Chl   # Chl of grazing target
       #prey5C : EH_abioP/bacC    # C of grazing target
       #prey5P : EH_abioP/bacP    # P of grazing target
       #prey5N : EH_abioP/bacN    # N of grazing target
@@ -462,13 +438,13 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.01            # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
-      QPmax : 0.0117         # max. P:C ratio (if resolve_P: .true)
-      QPmin : 0.0117         # min. P:C ratio (if resolve_P: .true)
-      QNmax : 0.15           # max. N:C ratio (if resolve_N: .true)
-      QNmin : 0.15           # min. N:C ratio (if resolve_N: .true)
+      #QPmax : 0.0117         # max. P:C ratio (if resolve_P: .true)
+      #QPmin : 0.0117         # min. P:C ratio (if resolve_P: .true)
+      #QNmax : 0.15           # max. N:C ratio (if resolve_N: .true)
+      #QNmin : 0.15           # min. N:C ratio (if resolve_N: .true)
       rmn : 0.05             # excretion rate
       gmax : 1.              # max. grazing rate
       Kz : 20.               # half sat. constant for grazing
@@ -478,14 +454,20 @@ instances:
       dynpref : .true.       # dynamical adjustment of preferences (fasham 1990?)
       num_prey : 4           # number of prey targets
       prey1pref : 0.1        # preference factor for prey1
+      prey1C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey1C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey1C2Si : 5.76       # Si:C ratio of prey1
       prey2pref : 0.1        # preference factor for prey2
+      prey2C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey2C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey3pref : 0.3        # preference factor for prey3
+      prey3C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey3C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey4pref : 0.5        # preference factor for prey4
+      prey4C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey4C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
     initialization:
       C : 1.0                # initial carbon
-      P : 0.0117             # initial phosphorus
-      N : 0.15               # initial nitrogen
     coupling:
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
@@ -503,17 +485,6 @@ instances:
       det2N : EH_abioP/det2N      # detrital nitrogen -fast sinking
       det2Si : EH_abioP/det2Si    # detrital silica -fast sinking
       prey1C : GPM_diat/C         # C of grazing target
-      prey1P : GPM_diat/P         # P of grazing target
-      prey1N : GPM_diat/N         # N of grazing target
-      prey1Chl : GPM_diat/Chl       # Chl of grazing target
       prey2C : GPM_pha/C          # C of grazing target
-      prey2P : GPM_pha/P          # P of grazing target
-      prey2N : GPM_pha/N          # N of grazing target
-      prey2Chl : GPM_pha/Chl       # Chl of grazing target
       prey3C : GPM_mixo/C         # C of grazing target
-      prey3P : GPM_mixo/P         # P of grazing target
-      prey3N : GPM_mixo/N         # N of grazing target
-      prey3Chl : GPM_mixo/Chl       # Chl of grazing target
       prey4C : GPM_miczoo/C       # C of grazing target
-      prey4P : GPM_miczoo/P       # P of grazing target
-      prey4N : GPM_miczoo/N       # N of grazing target

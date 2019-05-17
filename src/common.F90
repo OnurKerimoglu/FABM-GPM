@@ -97,7 +97,7 @@ module gpm_common
       type (type_state_variable_id)      :: id_C,id_P,id_N,id_Chl
       type (type_dependency_id)          :: id_QPr,id_QNr
       type (type_diagnostic_variable_id) :: id_realpref
-      real(rk)                           :: pref,C2Si
+      real(rk)                           :: pref,C2P,C2N,C2Si
       logical                            :: hasChl
    end type
    
@@ -275,19 +275,12 @@ module gpm_common
       prdat%grC(i)       = gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
       prdat%grP(i)       = prdat%grC(i)         * prdat%P(i)/prdat%C(i)  !molPprey/molCpred/d
       prdat%grN(i)       = prdat%grC(i)         * prdat%N(i)/prdat%C(i)  !molNprey/molCpred/d
-      if (prpar(i)%hasChl) then
-        !write(*,*),' '//trim(mpar%name)//' prey#',i,'grChl:',prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)
-        prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
-      end if
-      if (mpar%resolve_Si) then
-        prdat%grSi(i)      = prdat%grC(i)       * prdat%Si(i)/prdat%C(i) !molChlprey/molChlpred/d
-        !write(*,*),' '//trim(mpar%name)//' prey#',i,'prSi,prC,grSi',prdat%Si(i),prdat%C(i),prdat%grSi(i)
-      end if
+      prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
+      prdat%grSi(i)      = prdat%grC(i)       * prdat%Si(i)/prdat%C(i) !molChlprey/molChlpred/d
       !molXprey/molCpred/d = molCprey/molCpred/d  * molXprey/molCprey
       
       !write(*,*),' '//trim(mpar%name)//' prey#',i,'grC,prC,pref,ftotC',prdat%grC(i),prdat%C(i),prdat%rpref(i),ftotC
-      
-      !write(*,*),' '//trim(GPMpl%name)//' prey#',i,'grC,grP,grN',prdat%grC(i),prdat%grP(i),prdat%grN(i)
+
    END DO
    
    !write(*,'(A, 2F13.10)'),' '//trim(GPMpl%name)//' grSi:',prdat%grSi  
