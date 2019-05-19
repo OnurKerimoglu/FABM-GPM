@@ -1,6 +1,6 @@
 instances: 
   EH_abioS:
-    use: .false.
+    use: .true.
     long_name: EH-sediment
     model: ecoham/abio_sed
     parameters:
@@ -121,8 +121,8 @@ instances:
       Kp : 0.2               # half sat. conc. for P uptake 
       Kno3 : 1.5             # half sat. conc. for NO3 uptake 
       Knh4 : 0.5             # half sat. conc. for NH4 uptake  
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl 
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
@@ -189,8 +189,8 @@ instances:
       Kp : 0.1               # half sat. conc. for P uptake 
       Kno3 : 1.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.4             # half sat. conc. for NH4 uptake 
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl 
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
@@ -253,8 +253,8 @@ instances:
       Kp : 0.25              # half sat. conc. for P uptake 
       Kno3 : 2.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.7             # half sat. conc. for NH4 uptake 
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
@@ -316,8 +316,8 @@ instances:
       Kp : 0.3               # half sat. conc. for P uptake 
       Kno3 : 2.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.8             # half sat. conc. for NH4 uptake 
-      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
-      islope : 0.4           # initial slope (if lightresp== 1,10)
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH

@@ -1,6 +1,6 @@
 instances: 
   EH_abioS:
-    use: .false.
+    use: .true.
     long_name: EH-sediment
     model: ecoham/abio_sed
     parameters:
@@ -37,7 +37,7 @@ instances:
     long_name: EH-pelagic
     model: ecoham/abio_pel
     parameters:
-      Idm_met: 2              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 0              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.      # whether to resolve Si-cycle
       flux_diags: .true.      # whether to output flux diagnostics
       metCexc: 0              # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
@@ -92,7 +92,7 @@ instances:
     long_name: GPM_fixed-diatom
     model: gpm/phytoplankton
     parameters:
-      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .true.         # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
@@ -121,19 +121,20 @@ instances:
       Kp : 0.2               # half sat. conc. for P uptake 
       Kno3 : 1.5             # half sat. conc. for NO3 uptake 
       Knh4 : 0.5             # half sat. conc. for NH4 uptake 
-      metIresp : 2           # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      metIresp : 20           # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl 
+      #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.0            # excess carbon assimilation fraction
       C2Si : 5.76            # Molar C:Si ratio (if resolve_Si: .true)
       Ksi : 1.0              # half sat. conc. for Si lim growth (if resolve_Si: .true)
-      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
       #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
       C : 1.06               # initial carbon
     coupling:
-      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -156,7 +157,7 @@ instances:
     long_name: GPM-nanoflagellates
     model: gpm/phytoplankton
     parameters:
-      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   #whether the DOP is available for uptake
@@ -184,19 +185,19 @@ instances:
       Kp : 0.1               # half sat. conc. for P uptake 
       Kno3 : 1.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.4             # half sat. conc. for NH4 uptake 
-      metIresp : 2           # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
-      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
       #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
       C : 1.0               # initial carbon
     coupling:
-      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -217,7 +218,7 @@ instances:
     long_name: GPM-phaeocystis
     model: gpm/phytoplankton
     parameters:
-      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
@@ -245,19 +246,19 @@ instances:
       Kp : 0.25              # half sat. conc. for P uptake 
       Kno3 : 2.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.7             # half sat. conc. for NH4 uptake 
-      metIresp : 2           # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
-      metchl: 1             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      metchl: 0             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
       #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
       C : 1.0                # initial carbon
     coupling:
-      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
@@ -278,7 +279,7 @@ instances:
     long_name: GPM-mixotrophs
     model: gpm/mixotroph
     parameters: 
-      Idm_met: 2             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.     # whether to resolve Si-cycle
       fracaut: 0.5           # fraction of autotrophy
       metext: 0              # method for calculating light extinction. 0: C*kc
@@ -305,14 +306,14 @@ instances:
       Kp : 0.3               # half sat. conc. for P uptake 
       Kno3 : 2.0             # half sat. conc. for NO3 uptake 
       Knh4 : 0.8             # half sat. conc. for NH4 uptake 
-      metIresp : 2          # light response method. 1: monod; 10: light inh.; 2: geider97,instant (based on f(Idm)); 20: dynamic (based on par) 1,10 req. islope; 2,20 requires islope_perchl 
+      metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
-      metchl: 1              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
-      #Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
+      metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
+      Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
       #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
       rmn : 0.05             # excretion rate
       gmax : 2.0             # max. grazing rate
@@ -332,7 +333,7 @@ instances:
     initialization:
       C : 1.0              # initial carbon
     coupling:
-      PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
