@@ -12,8 +12,8 @@ def plot_main():
     plottype='wc_mean' #wc_int, wc_mean,middlerow
     colmap='viridis'
     #import pdb
-    if len(sys.argv) < 2: #this means no arguments were passed      
-      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/1D-40m_GPM-EH_varsto_dm.nc'
+    if len(sys.argv) < 2: #this means no arguments were passed
+      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/2019_05_20_odemet3_n20_2014/fixstochl/1D-40m_GPM-EH_fixstochl_dm.nc'
       disp('plotting default file:'+fname)
     else:
       disp('plotting file specified:'+sys.argv[1])
@@ -85,16 +85,17 @@ def plot_main():
     #print('available maecs variables:')        
     #disp(ncv)
     
-    z=np.squeeze(ncv['z'][:]) #depths at layer centers (fabm variables, temp, salt, etc)
-    zi=np.squeeze(ncv['zi'][:]) #depths at layer interfaces (diffusivities, fluxes, etc)
+    z=np.squeeze(ncv['z'][:-1]) #depths at layer centers (fabm variables, temp, salt, etc)
+    zi=np.squeeze(ncv['zi'][:-1]) #depths at layer interfaces (diffusivities, fluxes, etc)
 
     tv = nc.variables['time']
     utime=netcdftime.utime(tv.units)
-    tvec=utime.num2date(tv[:])
+    # the very last element might be the first step of the next year, so crop that out
+    tvec=utime.num2date(tv[:-1])
 
     #crop the data for the time period requested
     years=np.array([tvec[ti].year for ti in range(0,len(tvec))])
-    years2plot=range(years[-1]+1-numyears, years[-1]+1)
+    years2plot=range(years[-2]+1-numyears, years[-2]+1)
     yeari=np.where((years>=years2plot[0]) * (years<=years2plot[-1]))
     tvecC=tvec[yeari[0]]
 
@@ -154,7 +155,7 @@ def plot_main():
             depth=zi #depth at interfaces
         else:
             depth=z
-            
+
         #if depth vector is 2-D (vary with time)
         if len(depth.shape)==2:
             # repeat the tvecC to obtain a matrix
