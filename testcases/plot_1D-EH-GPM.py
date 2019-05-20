@@ -1,5 +1,5 @@
 # terminal call:
-# python plot_1D_GPM.py 1D-GPM.nc plot_sediment(0/1) num_years_to_plot(counting_backwards_from_the_last)
+# python plot_1D_GPM.py 1D-GPM.nc plot_air(0/1) plot_sediment(0/1) num_years_to_plot(counting_backwards_from_the_last)
 
 from pylab import *
 import netCDF4 as nc4
@@ -7,56 +7,77 @@ import netcdftime
 import sys
 import warnings
 
-def plot_maecs_Bpoolx2_phy():
-    
-    """from plot_maecs_omexdia import plot_maecs_omexdia 
-    (time,z,dz,data,datanames)=plot_maecs_omexdia()"""    
+def plot_main():
     
     plottype='wc_mean' #wc_int, wc_mean,middlerow
     colmap='viridis'
     #import pdb
     if len(sys.argv) < 2: #this means no arguments were passed      
-      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/1D-40m_GPM-EH_dm.nc'
+      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/1D-40m_GPM-EH_varsto_dm.nc'
       disp('plotting default file:'+fname)
     else:
       disp('plotting file specified:'+sys.argv[1])
       fname=sys.argv[1]
     
     if len(sys.argv)<3: #no second argument was passed
+      plotair=1
+    else:
+      plotair=int(sys.argv[2])
+    disp('plotair:'+str(plotair))
+
+    if len(sys.argv)<4: #no second argument was passed
       plotsed=1
     else:
-      plotsed=int(sys.argv[2])
+      plotsed=int(sys.argv[3])
     disp('plotsed:'+str(plotsed))
+
+
       
-    if len(sys.argv)<4: #no third argument was passed
+    if len(sys.argv)<5: #no third argument was passed
       numyears=1
     else: 
-      numyears=int(sys.argv[3])
+      numyears=int(sys.argv[4])
     disp('plotting last '+str(numyears)+' year of the simulation')
-    
+
+    numcol = 3.0
+    basewidth = 15
+    baseheight = 20
+
     if len(sys.argv) < 5: #this means no arguments were passed
-	varnames= [ 'temp','EH_abioP_O2_percSat','EH_abioP_DINH4',
+	   varnames= [ 'temp','nuh','attenuation_coefficient_of_photosynthetic_radiative_flux_calculator_result',
+                'EH_abioP_O2_percSat','total_chlorophyll_calculator_result','total_NPPR_calculator_result',
                 'EH_abioP_DINO3', 'EH_abioP_DIP','EH_abioP_DISi',
-                'EH_abioP_DOC','EH_abioP_det1C', 'EH_abioP_det2C',
+                'EH_abioP_DINH4','EH_abioP_det1C', 'EH_abioP_det2C',
                 'GPM_diat_C','GPM_nf_C','GPM_pha_C',
-                'GPM_mixo_C','GPM_miczoo_C','GPM_meszoo_C'
-                #,'total_NPPR_calculator_result','total_chlorophyll_calculator_result'
-		      ]
-	numcol=3.0
+                'GPM_mixo_C','GPM_miczoo_C','GPM_meszoo_C']
     else: 
-	varnames=sys.argv[4].split(',')
-	numcol=length(varnames)
-	
+	   varnames=sys.argv[4].split(',')
+	   numcol=length(varnames)
+
+    if plotair:
+        # from plot_sediment import readsed
+        # sediment variables
+        pickled = 0
+        varnames_air = ['airt', 'u10', 'v10']
+        numairvars = len(varnames_air)
+        h_air=3
+    else:
+        numairvars = 0
+        h_air=0
+        
     if plotsed: 
         #from plot_sediment import readsed
         #sediment variables
         pickled=0
-        varnames2=['EH_abioP_air_o2o', 'EH_abioS_o2o_brm', 'EH_abioS_sed_nn2']
-        numsedvars=len(varnames2)
-        figuresize=(16,20)
+        varnames_sed=['EH_abioP_air_o2o', 'EH_abioS_o2o_brm', 'EH_abioS_sed_nn2']
+        numsedvars=len(varnames_sed)
+        h_sed = 3
     else:
         numsedvars=0
-        figuresize=(20,10) #(25,15)
+        h_sed = 0
+    
+    #figuresize=(20,10) #(25,15)
+    figuresize = (basewidth, baseheight+h_air+h_sed)  # (25,15)
     
     #pelagic variables
     nc=nc4.Dataset(fname)
@@ -80,7 +101,51 @@ def plot_maecs_Bpoolx2_phy():
     f=figure(figsize=figuresize)
     f.subplots_adjust(top=0.95,bottom=0.05,hspace=0.5, wspace=0.5)
 
-    numvar=len(varnames)+numsedvars
+    numvar=numairvars+len(varnames)+numsedvars
+
+    if plotair:
+        for i in xrange(0, numairvars):
+            ax = subplot(ceil(numvar / numcol), numcol, i + 1)
+
+            if not (varnames_air[i] in ncv):
+                ax.text(0.5, 0.5, varnames_air[i] + '\n\n was not found',
+                        horizontalalignment='center',
+                        verticalalignment='center',
+                        transform=ax.transAxes)
+                continue
+
+            # print(ncv[varnames_air[i]].long_name)
+            title(ncv[varnames_air[i]].long_name + ' [$%s$]' % ncv[varnames_air[i]].units, size=8.0)
+
+            if ncv[varnames_air[i]].shape[1] > 1:
+                if plottype == 'middlerow':
+                    middlerow = int(round(len(ncv[varnames_air[i]][1, :]) / 2))
+                    dat = squeeze(ncv[varnames_air[i]][:, middlerow])
+                elif plottype == 'wc_int':
+                    dat = sum(squeeze(ncv[varnames_air[i]][:, :]), 1)
+                elif plottype == 'wc_mean':
+                    dat = mean(squeeze(ncv[varnames_air[i]][:, :]), 1)
+            else:
+                dat = squeeze(ncv[varnames_air[i]][:])
+
+            # crop the data for the time period requested
+            datC = dat[yeari[0]]
+
+            if varnames_air[i]=='airt':
+                datC=datC-273.15 #K to C
+
+            ax.plot(tvecC, datC, 'r-')
+
+            # x-axis
+            format_date_axis(ax, [tvecC[0], tvecC[-1]])
+            ax.xaxis.grid(color='k', linestyle=':', linewidth=0.5)
+            xlabel('')
+
+            # y-axis
+            yt = ax.get_yticks()
+            ytl = ax.get_yticklabels()
+            ax.set_yticks([yt[0], yt[-1]])
+            ax.set_yticklabels([str(yt[0]), str(yt[-1])])
 
     for i,varn in enumerate(varnames):       
         print varn
@@ -97,7 +162,7 @@ def plot_maecs_Bpoolx2_phy():
         else:
             t=tvecC
 
-        ax=subplot(ceil(numvar/numcol),numcol,i+1)
+        ax=subplot(ceil(numvar/numcol),numcol,numairvars+i+1)
 
         if (varnames[i]=='skip'):
             continue
@@ -157,28 +222,28 @@ def plot_maecs_Bpoolx2_phy():
     
     if plotsed:
         for i in xrange(0, numsedvars):
-            ax=subplot(ceil(numvar/numcol),numcol,i+len(varnames)+1)
+            ax=subplot(ceil(numvar/numcol),numcol,i+numairvars+len(varnames)+1)
 
-            if not (varnames2[i] in ncv):
-                ax.text(0.5,0.5,varnames2[i]+'\n\n was not found',
+            if not (varnames_sed[i] in ncv):
+                ax.text(0.5,0.5,varnames_sed[i]+'\n\n was not found',
                         horizontalalignment='center',
                         verticalalignment='center',
                         transform=ax.transAxes)
                 continue
 
-            #print(ncv[varnames2[i]].long_name)
-            title(ncv[varnames2[i]].long_name+' [$%s$]'%ncv[varnames2[i]].units,size=8.0)
+            #print(ncv[varnames_sed[i]].long_name)
+            title(ncv[varnames_sed[i]].long_name+' [$%s$]'%ncv[varnames_sed[i]].units,size=8.0)
 
-            if ncv[varnames2[i]].shape[1] > 1:
+            if ncv[varnames_sed[i]].shape[1] > 1:
                 if plottype=='middlerow':
-                    middlerow=int(round(len(ncv[varnames2[i]][1,:])/2))
-                    dat=squeeze(ncv[varnames2[i]][:,middlerow])
+                    middlerow=int(round(len(ncv[varnames_sed[i]][1,:])/2))
+                    dat=squeeze(ncv[varnames_sed[i]][:,middlerow])
                 elif plottype=='wc_int':
-                    dat=sum(squeeze(ncv[varnames2[i]][:,:]),1)
+                    dat=sum(squeeze(ncv[varnames_sed[i]][:,:]),1)
                 elif plottype=='wc_mean':
-                    dat=mean(squeeze(ncv[varnames2[i]][:,:]),1)
+                    dat=mean(squeeze(ncv[varnames_sed[i]][:,:]),1)
             else:
-                dat=squeeze(ncv[varnames2[i]][:])
+                dat=squeeze(ncv[varnames_sed[i]][:])
 
             #crop the data for the time period requested
             datC=dat[yeari[0]]
@@ -240,5 +305,5 @@ def format_date_axis(ax,tspan):
 if __name__ == "__main__":
     # if you call this script from the command line (the shell) it will
     # run the 'main' function
-    plot_maecs_Bpoolx2_phy()
+    plot_main()
 
