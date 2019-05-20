@@ -38,9 +38,9 @@ elif [ $v == 2 ]; then
   mkdir -p ${rootdir}/fixsto_empchl
   mv 1D-40m_GPM-EH_fixsto_empchl* ${rootdir}/fixsto_empchl
   mv restart.nc ${rootdir}/fixsto_empchl/restart_fixto_empchl_20140101.nc
+  cp fabm-EH_AP_AS-GPM_P_Z_fixedSt_empChl.yaml ${rootdir}/fixsto_empchl/
   echo "fixsto_empchl: stored the results in: ${rootdir}/fixsto_empchl"
  fi
- cp fabm-EH_AP_AS-GPM_P_Z_fixedSt_empChl.yaml ${rootdir}/fixstochl/
  tail -n17 ${rootdir}/fixsto_empchl/1D-40m_GPM-EH_fixsto_empchl_log.txt | head -n9
 elif [ $v == 3 ]; then
  echo -e "\nvarsto:"
@@ -51,10 +51,10 @@ elif [ $v == 3 ]; then
   python plot_1D-EH-GPM.py 1D-40m_GPM-EH_varsto_dm.nc
   mkdir -p ${rootdir}/varsto
   mv 1D-40m_GPM-EH_varsto* ${rootdir}/varsto
-  mv restart.nc ${rootdir}/varstochl/restart_varstochl_20140101.nc
+  mv restart.nc ${rootdir}/varsto/restart_varsto_20140101.nc
   echo "varsto: stored the results in: ${rootdir}/varsto"
+  cp fabm-EH_AP_AS-GPM_P_Z.yaml ${rootdir}/varsto/
  fi
- cp fabm-EH_AP_AS-GPM_P_Z.yaml ${rootdir}/fixstochl/
  tail -n17 ${rootdir}/varsto/1D-40m_GPM-EH_varsto_log.txt | head -n9
 fi
 done
