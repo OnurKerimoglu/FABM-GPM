@@ -80,6 +80,7 @@
    !General Parameters
    call self%get_parameter(self%Idm_met, 'Idm_met',   '-',          'method to calculate daily average PAR',          default=0)
    call self%get_parameter(self%resolve_Si,  'resolve_Si',   '-',     'whether to resolve Si cycle',          default=.false.)
+   call self%get_parameter(self%resolve_DIC,  'resolve_DIC',   '-',     'whether to resolve DIC',          default=.false.)
    call self%get_parameter(self%lim_Si,  'lim_Si',   '-',     'whether limited by Si',          default=.false.)
    
    call self%get_parameter(self%metext,  'metext',   '-',  'method for calculating light ext.',  default=0)
@@ -161,7 +162,9 @@
    
    ! linking to DIM and POM pools
    !C
-   call self%register_state_dependency(self%id_DIC,'DIC')
+   if (self%resolve_DIC) then
+     call self%register_state_dependency(self%id_DIC,'DIC')
+   end if
    call self%register_state_dependency(self%id_DOC,'DOC')
    if (self%metCexc .ne. 0) then
      call self%register_state_dependency(self%id_SOC,'SOC')
@@ -384,7 +387,9 @@
    end select
    
    ! collect resources
-   !_GET_(self%id_DIC,di%C) !?
+   !if (self%resolve_DIC) then
+   !_GET_(self%id_DIC,di%C)
+   !end if
    _GET_(self%id_DIP,di%P)
    if (self%dop_allowed) then
      _GET_(self%id_DOP,dom%P)
@@ -458,7 +463,9 @@
    
    ! Uptake Targets
    !C
-   _SET_ODE_(self%id_DIC,-Aupt%C )
+   if (self%resolve_DIC) then
+    _SET_ODE_(self%id_DIC,-Aupt%C )
+   end if
    !P
    if (org%dop_uptake) then
      _SET_ODE_(self%id_DOP,-Aupt%P)

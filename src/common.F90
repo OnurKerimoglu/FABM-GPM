@@ -165,7 +165,7 @@ module gpm_common
      type (type_horizontal_dependency_id)::id_I_0,id_I0dm
 
 !    Model parameters
-     logical  :: resolve_Si,lim_Si,dop_allowed !,resolve_cal,resolve_carb
+     logical  :: resolve_Si,resolve_DIC,lim_Si,dop_allowed !,resolve_cal,resolve_carb
      integer  :: Idm_met,metchl,metIresp,metCexc
      real(rk) :: kchl,gam
      real(rk) :: C2Si,Chl2C,Chl2Cmax !,C2Ccal

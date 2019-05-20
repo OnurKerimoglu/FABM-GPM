@@ -5,6 +5,7 @@ instances:
     model: ecoham/abio_sed
     parameters:
       resolve_Si: .true.      # whether to resolve Si-cycle
+      resolve_DIC: .false.    # whether to resolve DIC
       coupled2water: .true.   # whether the benthic model is coupled to a pelagic model
       det1_wsed : 0.1         # sedimentation rate of pelagic detritus
       det2_wsed : 1.0        # sedimentation rate of pelagic detritus
@@ -20,7 +21,7 @@ instances:
       POSi : 1.0            # initial benthic organic silicate (opal)
     coupling:
       pelagic_O2 : EH_abioP/O2      # pelagic O2
-      pelagic_DIC : EH_abioP/DIC      # pelagic dissolved inorganic carbon
+      #pelagic_DIC : EH_abioP/DIC      # pelagic dissolved inorganic carbon
       pelagic_DIP : EH_abioP/DIP      # pelagic dissolved inorganic phosphorus
       pelagic_NH4: EH_abioP/DINH4    # pelagic NH4
       pelagic_NO3: EH_abioP/DINO3    # pelagic NO3
@@ -39,6 +40,7 @@ instances:
     parameters:
       Idm_met: 2              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_Si: .true.      # whether to resolve Si-cycle
+      resolve_DIC: .false.    # whether to resolve DIC
       flux_diags: .true.      # whether to output flux diagnostics
       metCexc: 0              # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       metairsea: 2            # method to resolve air-sea fluxes; 0: no air-sea flux, 1: EH (O2); 2:ERGOM (O2)
@@ -68,7 +70,7 @@ instances:
       b_rcp: 50.0             # molar C:P  ratio of bac
     initialization:
       O2   : 320              # initial O2 [mmolO2/m3]
-      DIC : 100000.0          # initial dissolved inorganic carbon
+      #DIC : 100000.0          # initial dissolved inorganic carbon
       DIP : 1.0               # initial dissolved inorganic phosphorus
       DINO3 : 14.40           # initial dissolved inorganic NO3
       DINH4 : 1.60            # initial dissolved inorganic NH4
@@ -140,7 +142,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
-      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      #DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -206,7 +208,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
-      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      #DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -270,7 +272,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
-      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      #DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -344,7 +346,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
-      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      #DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -413,7 +415,7 @@ instances:
       C : 1.0                # initial carbon
     coupling:
       O2  : EH_abioP/O2         # pelagic O2
-      DIC : EH_abioP/DIC        # dissolved inorganic carbon
+      #DIC : EH_abioP/DIC        # dissolved inorganic carbon
       DIP : EH_abioP/DIP        # dissolved inorganic phosphorus
       DINH4 : EH_abioP/DINH4    # dissolved inorganic NH4 
       DISi : EH_abioP/DISi      # dissolved inorganic silica 
@@ -486,7 +488,7 @@ instances:
       C : 1.0                # initial carbon
     coupling:
       O2  : EH_abioP/O2           # pelagic O2
-      DIC : EH_abioP/DIC          # dissolved inorganic carbon
+      #DIC : EH_abioP/DIC          # dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4 
       DISi : EH_abioP/DISi        # dissolved inorganic silica 
