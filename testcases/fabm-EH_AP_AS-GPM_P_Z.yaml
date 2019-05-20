@@ -389,7 +389,7 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.001           # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
       QPmax : 0.0117         # max. P:C ratio (if resolve_P: .true)
@@ -411,8 +411,6 @@ instances:
       #prey5pref : 0.3        # preference factor for prey5
     initialization:
       C : 1.0                # initial carbon
-      P : 0.0117             # initial phosphorus
-      N : 0.15               # initial nitrogen
     coupling:
       O2  : EH_abioP/O2         # pelagic O2
       DIC : EH_abioP/DIC        # dissolved inorganic carbon
@@ -462,7 +460,7 @@ instances:
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
       rmdq : 0.01            # quadratic mortality rate
-      metIntSt: 1            # method to calculate internal states, 0: fixed stoich, 1: dynamic
+      metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
       QPmax : 0.0117         # max. P:C ratio (if resolve_P: .true)
@@ -482,10 +480,10 @@ instances:
       prey2pref : 0.1        # preference factor for prey2
       prey3pref : 0.3        # preference factor for prey3
       prey4pref : 0.5        # preference factor for prey4
+      prey4C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey4C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
     initialization:
       C : 1.0                # initial carbon
-      P : 0.0117             # initial phosphorus
-      N : 0.15               # initial nitrogen
     coupling:
       O2  : EH_abioP/O2           # pelagic O2
       DIC : EH_abioP/DIC          # dissolved inorganic carbon
@@ -515,5 +513,3 @@ instances:
       prey3N : GPM_mixo/N         # N of grazing target
       prey3Chl : GPM_mixo/Chl       # Chl of grazing target
       prey4C : GPM_miczoo/C       # C of grazing target
-      prey4P : GPM_miczoo/P       # P of grazing target
-      prey4N : GPM_miczoo/N       # N of grazing target
