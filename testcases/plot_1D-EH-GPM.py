@@ -13,7 +13,7 @@ def plot_main():
     colmap='viridis'
     #import pdb
     if len(sys.argv) < 2: #this means no arguments were passed
-      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/2019_05_20_odemet3_n20_2014/fixstochl/1D-40m_GPM-EH_fixstochl_dm.nc'
+      fname='/home/onur/setups/test-BGCmodels/gpm-eh/1D-40m/test_GPM-EH/2019_05_21_odemet2_n20_2013/varsto/1D-40m_GPM-EH_varsto_dm.nc'
       disp('plotting default file:'+fname)
     else:
       disp('plotting file specified:'+sys.argv[1])
@@ -31,16 +31,14 @@ def plot_main():
       plotsed=int(sys.argv[3])
     disp('plotsed:'+str(plotsed))
 
-
-      
     if len(sys.argv)<5: #no third argument was passed
-      numyears=1
+      numyears=1 #plot only the last year
     else: 
       numyears=int(sys.argv[4])
     disp('plotting last '+str(numyears)+' year of the simulation')
 
     numcol = 3.0
-    basewidth = 15
+    basewidth = 10+numyears*5
     baseheight = 20
 
     if len(sys.argv) < 5: #this means no arguments were passed
@@ -52,7 +50,7 @@ def plot_main():
                 'GPM_mixo_C','GPM_miczoo_C','GPM_meszoo_C']
     else: 
 	   varnames=sys.argv[4].split(',')
-	   numcol=length(varnames)
+	   numcol=len(varnames)
 
     if plotair:
         # from plot_sediment import readsed
