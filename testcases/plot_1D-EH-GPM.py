@@ -41,38 +41,38 @@ def plot_main():
     basewidth = 10+numyears*5
     baseheight = 20
 
-    if len(sys.argv) < 5: #this means no arguments were passed
-	   varnames= [ 'temp','nuh','attenuation_coefficient_of_photosynthetic_radiative_flux_calculator_result',
+    if len(sys.argv) < 6: #this means no arguments were passed
+      varnames= [ 'temp','nuh','attenuation_coefficient_of_photosynthetic_radiative_flux_calculator_result',
                 'EH_abioP_O2_percSat','total_chlorophyll_calculator_result','total_NPPR_calculator_result',
                 'EH_abioP_DINO3', 'EH_abioP_DIP','EH_abioP_DISi',
                 'EH_abioP_DINH4','EH_abioP_det1C', 'EH_abioP_det2C',
                 'GPM_diat_C','GPM_nf_C','GPM_pha_C',
                 'GPM_mixo_C','GPM_miczoo_C','GPM_meszoo_C']
-    else: 
-	   varnames=sys.argv[4].split(',')
-	   numcol=len(varnames)
+    else:
+      varnames=sys.argv[5].split(',')
+      numcol=len(varnames)
 
     if plotair:
-        # from plot_sediment import readsed
-        # sediment variables
-        pickled = 0
-        varnames_air = ['airt', 'u10', 'v10']
-        numairvars = len(varnames_air)
-        h_air=3
+      # from plot_sediment import readsed
+      # sediment variables
+      pickled = 0
+      varnames_air = ['airt', 'u10', 'v10']
+      numairvars = len(varnames_air)
+      h_air=3
     else:
-        numairvars = 0
-        h_air=0
+      numairvars = 0
+      h_air=0
         
     if plotsed: 
-        #from plot_sediment import readsed
-        #sediment variables
-        pickled=0
-        varnames_sed=['EH_abioP_air_o2o', 'EH_abioS_o2o_brm', 'EH_abioS_sed_nn2']
-        numsedvars=len(varnames_sed)
-        h_sed = 3
+      #from plot_sediment import readsed
+      #sediment variables
+      pickled=0
+      varnames_sed=['EH_abioP_air_o2o', 'EH_abioS_o2o_brm', 'EH_abioS_sed_nn2']
+      numsedvars=len(varnames_sed)
+      h_sed = 3
     else:
-        numsedvars=0
-        h_sed = 0
+      numsedvars=0
+      h_sed = 0
     
     #figuresize=(20,10) #(25,15)
     figuresize = (basewidth, baseheight+h_air+h_sed)  # (25,15)
