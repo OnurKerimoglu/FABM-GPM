@@ -489,22 +489,40 @@ module gpm_common
    !when NO3 and NH3 are not seperately resolved
    !org%lim_N = di%N/(di%N+apar%Kn)
    !when NO3 and NH3 are resolved
-   mno3=di%NO3/apar%kno3
-   mnh4=di%NH4/apar%knh4
-   org%lim_no3= mno3 / (1+mno3+mnh4) !in EH, Q1x
-   org%lim_nh4= mnh4 / (1+mno3+mnh4) !in EH, Q2x
-   org%lim_N = org%lim_no3+org%lim_nh4
-   !Note that lim%N = (mno3+mnh4)/(1+mno3+mnh4) < 1.0  (which should be the case)
+   
+   if (di%NO3 .lt. TINY) then
+     mno3=0.0_rk
+   else
+     mno3=di%NO3/apar%kno3
+   end if
+   if (di%NH4 .lt. TINY) then
+     mnh4=0.0_rk
+   else
+     mnh4=di%NH4/apar%knh4
+   end if
+   org%lim_no3= mno3 / (1.0_rk + mno3 + mnh4) !in EH, Q1x
+   org%lim_nh4= mnh4 / (1.0_rk + mno3 + mnh4) !in EH, Q2x
    !other way of expressing lim_ terms:
    !!lim_no3=di%NO3/(di%NO3+apar%kno3*(1+di%NH4/apar%knh4))  
    !!lim_nh4=di%NH4/(di%NH4+apar%knh4*(1+di%NO3/apar%kno3))
-     
+   !Note that lim%N = (mno3+mnh4)/(1+mno3+mnh4) < 1.0. 
+   
+   org%lim_N = org%lim_no3+org%lim_nh4
+   
    !P limitation: choose between dip/dop
-   org%lim_dip= di%P/(di%P+apar%Kp)
+   if (di%P .lt. TINY) then
+     org%lim_dip= 0.0_rk
+   else
+     org%lim_dip= di%P/(di%P+apar%Kp)
+   end if
    org%lim_P=org%lim_dip
    org%dop_uptake=.false.
    if (apar%dop_allowed) then
-     org%lim_dop= dom%P/(dom%P+apar%Kp)
+     if (dom%P .lt. TINY) then
+       org%lim_dop = 0.0_rk
+     else
+       org%lim_dop = dom%P/(dom%P+apar%Kp)
+     end if
      if ((org%lim_dip<=0.7) .and. (org%lim_dop>org%lim_dip)) then 
        org%lim_P=org%lim_dop
        org%dop_uptake=.true.
@@ -565,8 +583,8 @@ module gpm_common
      !when no3 and nh4 are not resolved:
      !upt%N = org%C*fT*apar%VNmax*(1.0-org%QNr)*org%lim_N ![mmol/m3/d]
      !NO3,NH4 seperate:
-     upt%NO3 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_no3 / (org%lim_no3+org%lim_nh4)
-     upt%NH4 = org%C*fT*apar%VNmax*(1.0-org%QNr)* org%lim_nh4 / (org%lim_no3+org%lim_nh4)
+     upt%NO3 = org%C*fT*apar%VNmax*(1.0-org%QNr)*org%lim_no3  ! lim_no3= limN *lim_no3/ (lim_no3+lim_nh4)
+     upt%NH4 = org%C*fT*apar%VNmax*(1.0-org%QNr)*org%lim_nh4  ! lim_no3= limN *lim_no3 / (lim_no3+lim_nh4)
    else
      call apar%fatal_error('common.F90:get_nut_QLU','for '//trim(apar%name)// ' specified metIntSt option is not available')
    end if
@@ -579,7 +597,11 @@ module gpm_common
      !QUOTAS
      org%Si=org%C / apar%C2Si !for consistency
      !LIMITATION
-     lim%Si=di%Si/(di%Si+apar%Ksi)
+     if (di%Si .lt. TINY) then
+       lim%Si=0.0_rk
+     else
+       lim%Si=di%Si/(di%Si+apar%Ksi)
+     end if
      org%nutlim=min(org%nutlim,lim%Si) !lim_nps in EH
      !UPTAKE
      !At this stage, nut. uptake rates are not yet known; they will be based on the C-uptake (growth)
@@ -996,9 +1018,19 @@ module gpm_common
     !when NO3 and NH3 are not seperately resolved
     !upt%N= vC_fTfIfN * org%QN !/apar%%C2N
     !when NO3 and NH3 are resolved:
-    upt%NO3=upt%C*org%QN*org%lim_no3/org%lim_N !in EH, lim_no3=Q1x 
-    upt%NH4=upt%C*org%QN*org%lim_nh4/org%lim_N !in EH, lim_nh4=Q21
-    !write(*,*)'upt:',upt%NO3+upt%NH4,'build:',upt%C/apar%C2N,'diff:',upt%NO3+upt%NH4-upt%C/apar%C2N
+    !original:
+    !upt%NO3=upt%C*org%QN*org%lim_no3 !in EH, lim_no3=Q1x 
+    !upt%NH4=upt%C*org%QN*org%lim_nh4 !in EH, lim_nh4=Q2x
+    !this is not N-conservative: Increase in Phy-N: Pc*QN > Sum of No3+Nh4 uptake: Pc*QN*(lim_no3+lim+nh4)
+    !VNO3= Pc*QN*f;  VNH4= Pc*QN*(1-f); f/1-f=Lno3/Lnh4=> f=Lno3/(Lno3+Lnh4); 1-f=Lnh4/(Lno3+Lnh4)
+    if (org%lim_N .gt. 0.0_rk) then !to avoid a 0/0 situation (although unlikely)
+      upt%NO3=upt%C*org%QN*org%lim_no3/org%lim_N
+      upt%NH4=upt%C*org%QN*org%lim_nh4/org%lim_N
+    else !then upt%C = 0.0 anyway
+      upt%NO3=0.0_rk
+      upt%NH4=0.0_rk
+    end if
+    !write(*,*)'lim_no3+lim_nh4:',org%lim_no3+org%lim_nh4,'upt-build:',upt%NO3+upt%NH4-upt%C*org%QN
    end if
    !uptake of Si and Ccal is based on C uptake anyway.
    if (apar%lim_Si) then
