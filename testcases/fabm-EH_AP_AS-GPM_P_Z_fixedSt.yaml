@@ -94,11 +94,11 @@ instances:
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .true.         # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
-      metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
-      kc: 0.00453            #C-specific light ext. coefficient
-      kchl: 0.023            #Chl-specific light ext. coefficient                  
-      metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : 0.0               # vertical velocity (<0 for sinking)
+      metext: 0              # method for calculating light extinction. 0: C*kc; 1: chl*kchl
+      kc: 0.03               # [m2/mmolC] specific light ext. coefficient
+      #kchl: 0.023            #Chl-specific light ext. coefficient                  
+      metvel: 1              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      w : -1.0               # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
@@ -159,7 +159,7 @@ instances:
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   #whether the DOP is available for uptake
       metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
-      kc: 0.00453            #C-specific light ext. coefficient
+      kc: 0.03               # [m2/mmolC] specific light ext. coefficient
       #kchl: 0.023            #Chl-specific light ext. coefficient                  
       metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : 0.0                # vertical velocity (<0 for sinking)
@@ -184,13 +184,13 @@ instances:
       Knh4 : 0.4             # half sat. conc. for NH4 uptake 
       metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
-      islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
+      islope_perchl: 5.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
       Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      #Chl2Cmax: 0.04         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
       C : 1.0               # initial carbon
     coupling:
@@ -219,8 +219,8 @@ instances:
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
       metext: 0              # method for calculating light extinction. 0: C*kc; 1: chl*kchl
-      kc: 0.00453            # C-specific light ext. coefficient
-      kchl: 0.023            # Chl-specific light ext. coefficient                  
+      kc: 0.03               # [m2/mmolC] specific light ext. coefficient
+      #kchl: 0.023            # Chl-specific light ext. coefficient                  
       metvel: 0              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : 0.0                # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
@@ -244,13 +244,13 @@ instances:
       Knh4 : 0.7             # half sat. conc. for NH4 uptake 
       metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
-      islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
+      islope_perchl: 5.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       metchl: 0             # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
       Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      #Chl2Cmax: 0.04         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
     initialization:
       C : 1.0                # initial carbon
     coupling:
@@ -278,7 +278,7 @@ instances:
       resolve_Si: .true.     # whether to resolve Si-cycle
       fracaut: 0.5           # fraction of autotrophy
       metext: 0              # method for calculating light extinction. 0: C*kc
-      kc : 0.03              # specific light extinction coefficient
+      kc: 0.03               # [m2/mmolC] specific light ext. coefficient
       kchl: 0.023            # Chl-specific light ext. coefficient
       metvel: 0              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : 0.0                # vertical velocity (<0 for sinking)
@@ -303,13 +303,13 @@ instances:
       Knh4 : 0.8             # half sat. conc. for NH4 uptake 
       metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
-      islope_perchl: 10.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
+      islope_perchl: 5.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
       metchl: 0              # method to calculate chlorophyll, 0: fixed ratio; 1: empirical; 2: Geider97, bal. growth (1&2 require abioP/I0dm or pardm  coupling); 20: dynamic, Geider97
       Chl2C: 0.02            # [gChl:gC] constant Chl:C (if metchl=0)
-      #Chl2Cmax: 0.06         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
+      #Chl2Cmax: 0.04         # [gChl/gC] Max.Chl:C ratio (if metchl=2,20)
       rmn : 0.05             # excretion rate
       gmax : 2.0             # max. grazing rate
       Kz : 20.               # half sat. constant for grazing
@@ -356,9 +356,9 @@ instances:
     model: gpm/zooplankton
     parameters: 
       resolve_Si: .true.     # whether to resolve Si-cycle
-      metext: 0              #method for calculating light extinction. 0: C*kc
-      kc : 0.03              # specific light extinction coefficient
-      metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      metext: 0              # method for calculating light extinction. 0: C*kc
+      kc: 0.03               # [m2/mmolC] specific light ext. coefficient
+      metvel: 0              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : 0.0                # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for heterotrophic processes  (if tempresp==2)
@@ -424,7 +424,7 @@ instances:
     parameters: 
       resolve_Si: .true.     # whether to resolve Si-cycle
       metext: 0              # method for calculating light extinction. 0: C*kc
-      kc : 0.03              # specific light extinction coefficient
+      kc: 0.03               # [m2/mmolC] specific light ext. coefficient
       metvel: 0              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : 0.0                # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
