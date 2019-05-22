@@ -38,7 +38,7 @@ def plot_main():
     disp('plotting last '+str(numyears)+' year of the simulation')
 
     numcol = 3.0
-    basewidth = 10+numyears*5
+    basewidth = 8+numyears*8
     baseheight = 20
 
     if len(sys.argv) < 6: #this means no arguments were passed
@@ -67,7 +67,8 @@ def plot_main():
       #from plot_sediment import readsed
       #sediment variables
       pickled=0
-      varnames_sed=['EH_abioP_air_o2o', 'EH_abioS_o2o_brm', 'EH_abioS_sed_nn2']
+      varnames_sed=['EH_abioS_POC','EH_abioS_PON','EH_abioS_POP',
+                    'EH_abioP_air_o2o', 'EH_abioS_o2o_brm', 'EH_abioS_sed_nn2']
       numsedvars=len(varnames_sed)
       h_sed = 3
     else:
