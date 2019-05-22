@@ -163,6 +163,7 @@ module gpm_common
      !type (type_diagnostic_variable_id) :: id_pc_o2o = pc_dic = CGain_A
      type (type_dependency_id)          :: id_par,id_pardm,id_Chl_dep
      type (type_horizontal_dependency_id)::id_I_0,id_I0dm
+     type (type_diagnostic_variable_id) :: id_sinkvel
 
 !    Model parameters
      logical  :: resolve_Si,resolve_DIC,lim_Si,dop_allowed !,resolve_cal,resolve_carb

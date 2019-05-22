@@ -277,6 +277,11 @@
                                           output=output_time_step_averaged) 
    end if
    
+   if (self%metvel .gt. 0) then
+    call self%register_diagnostic_variable(self%id_sinkvel,'sinkvel','m s-1', 'sinking velocity',         &
+                                          output=output_time_step_averaged) 
+   end if
+   
    !contribute to aggregate variables
    call self%add_to_aggregate_variable(total_NPPR,self%id_NPPR)
    
@@ -323,7 +328,7 @@
 !
 ! !LOCAL VARIABLES:
    logical                    :: debw
-   real(rk)                   :: fT,exud_soc
+   real(rk)                   :: fT,exud_soc,vert_vel
    type (type_env)            :: env
    type (type_elms)           :: dom,Alim,exud,mort
    type (type_dim)            :: di,Aupt
@@ -562,7 +567,17 @@
    _SET_DIAGNOSTIC_(self%id_diagChl, org%Chl)
    if (self%metchl .ne. 0) then
      _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
-   end if 
+   end if
+   select case (self%metvel)
+     case default
+       call self%fatal_error('phytoplankton.F90/get_vertical_movement','for '//trim(self%name)// ' specified metvel option is not available')
+     case (0)
+       vert_vel=self%w
+     case (1)
+      !vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
+      vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * org%limNP))
+     _SET_DIAGNOSTIC_(self%id_sinkvel,vert_vel*s2d)
+   end select
    !
    !END OF WRITE
    !-------------------------------------------------------------------------
@@ -611,7 +626,8 @@
        _GET_ (self%id_QPr_dep,QPr)
        _GET_ (self%id_QNr_dep,QNr)
        Qr=min(QPr,QNr)
-      vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
+      !vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
+      vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * Qr))
    end select
 
    !Set these calculated vertical_movement values
