@@ -14,10 +14,10 @@ instances:
       brp : 0.0333            # benthic rem rate for P
       brsi: 0.0130            # benthic rem rate for Si
     initialization:
-      POC : 10.6            # initial benthic organic carbon
-      POP : 0.1              # initial benthic organic phosphorus
-      PON : 1.6             # initial benthic organic nitrogentus
-      POSi : 1.0            # initial benthic organic silicate (opal)
+      POC : 106            # initial benthic organic carbon
+      POP : 1.             # initial benthic organic phosphorus
+      PON : 16             # initial benthic organic nitrogentus
+      #POSi : 10.0         # initial benthic organic silicate (opal)
     coupling:
       pelagic_O2 : EH_abioP/O2      # pelagic O2
       pelagic_DIP : EH_abioP/DIP      # pelagic dissolved inorganic phosphorus
@@ -66,7 +66,7 @@ instances:
       b_rcn: 5.0              # molar C:N  ratio of bac
       b_rcp: 50.0             # molar C:P  ratio of bac
     initialization:
-      O2   : 320              # initial O2 [mmolO2/m3]
+      O2   : 320              # initial O2 [mmolO2/m3]91e73154a2e9396f5de330ea55f3ea8dfc58f430
       DIP : 1.0               # initial dissolved inorganic phosphorus
       DINO3 : 14.40           # initial dissolved inorganic NO3
       DINH4 : 1.60            # initial dissolved inorganic NH4
@@ -98,7 +98,7 @@ instances:
       kc: 0.03               # [m2/mmolC] specific light ext. coefficient
       #kchl: 0.023            #Chl-specific light ext. coefficient                  
       metvel: 1              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : -1.0               # vertical velocity (<0 for sinking)
+      w : -3.0               # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
@@ -143,7 +143,7 @@ instances:
       DON : EH_abioP/DON          # pelagic dissolved organic nitrogen
       #SOC : EH_abioP/SOC         # dissolved semi-labile organic carbon
       det1C : EH_abioP/det1C      # detrital carbon -slow sinking
-      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking
+      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking91e73154a2e9396f5de330ea55f3ea8dfc58f430
       det1N : EH_abioP/det1N      # detrital nitrogen -slow sinking
       det2C : EH_abioP/det2C      # detrital carbon -fast sinking
       det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
@@ -161,8 +161,8 @@ instances:
       metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
       kc: 0.03               # [m2/mmolC] specific light ext. coefficient
       #kchl: 0.023            #Chl-specific light ext. coefficient                  
-      metvel: 0              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : 0.0                # vertical velocity (<0 for sinking)
+      metvel: 1              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      w : -0.5                # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
@@ -181,10 +181,10 @@ instances:
       #VNmax : 2.5            # max. P uptake rate (if metIntSt=1)
       Kp : 0.1               # half sat. conc. for P uptake 
       Kno3 : 1.0             # half sat. conc. for NO3 uptake 
-      Knh4 : 0.4             # half sat. conc. for NH4 uptake 
+      Knh4 : 0.25             # half sat. conc. for NH4 uptake 
       metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
-      islope_perchl: 5.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
+      islope_perchl: 8.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
       #Iopt : 40              # optimal light intensity (if lightresp==10)
       metCexc: 0             # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
       excess: 0.5            # excess carbon assimilation fraction
@@ -280,8 +280,8 @@ instances:
       metext: 0              # method for calculating light extinction. 0: C*kc
       kc: 0.03               # [m2/mmolC] specific light ext. coefficient
       kchl: 0.023            # Chl-specific light ext. coefficient
-      metvel: 0              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : 0.0                # vertical velocity (<0 for sinking)
+      metvel: 1              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      w : -0.5                # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
