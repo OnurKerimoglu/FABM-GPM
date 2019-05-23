@@ -158,7 +158,7 @@ module gpm_common
      type (type_diagnostic_variable_id) :: id_Closs,id_Ploss,id_Nloss
      type (type_diagnostic_variable_id) :: id_NPPR,id_exudsoc
      type (type_diagnostic_variable_id) :: id_Cgain_A,id_Pgain_A,id_NO3gain_A,id_NH4gain_A
-     type (type_diagnostic_variable_id) :: id_MuClim_A,id_Plim,id_Nlim,id_Silim
+     type (type_diagnostic_variable_id) :: id_MuClim_A,id_Plim,id_Nlim,id_Silim,id_Ilim
      type (type_diagnostic_variable_id) :: id_diagChl,id_QChl,id_chlrho
      !type (type_diagnostic_variable_id) :: id_pc_o2o = pc_dic = CGain_A
      type (type_dependency_id)          :: id_par,id_pardm,id_Chl_dep
@@ -571,6 +571,8 @@ module gpm_common
      org%QPr=min(_ONE_,max(_ZERO_,(org%QP-apar%QPmin)/(apar%QPmax-apar%QPmin)))
      org%QN=org%N/org%C
      org%QNr=min(_ONE_,max(_ZERO_,(org%QN-apar%QNmin)/(apar%QNmax-apar%QNmin)))
+     
+     !write(*,*)'QN,QP',org%QN,org%QP
      
      !LIMITATIONS
      !fN=0 @ Q=Qmin and fN->1 as QP->inf
@@ -1126,6 +1128,6 @@ module gpm_common
 !      Iopt(:,:,:) = Iopt(:,:,:) + dIopt_dt(:,:,:)*dt
 !     endif
 !   end select
-
-
+!EOC
+!-----------------------------------------------------------------------
 end module

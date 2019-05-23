@@ -229,6 +229,8 @@
                                           output=output_time_step_averaged) 
                                           
    ! Autototrophy
+   call self%register_diagnostic_variable(self%id_Ilim,'limI','-', 'Light limitation',  &
+                                          output=output_time_step_averaged) 
    call self%register_diagnostic_variable(self%id_Plim,'limP','-', 'P limitation',  &
                                           output=output_time_step_averaged)   
    call self%register_diagnostic_variable(self%id_Nlim,'limN','-', 'N limitation',  &
@@ -554,6 +556,7 @@
    _SET_DIAGNOSTIC_(self%id_Plim,Alim%P)
    _SET_DIAGNOSTIC_(self%id_Nlim,Alim%N)
    !Autotrophy
+   _SET_DIAGNOSTIC_(self%id_Ilim,org%fI)
    _SET_DIAGNOSTIC_(self%id_MuClim_A,Aupt%C/org%C*s2d)
    _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
    _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
@@ -574,9 +577,10 @@
      case (0)
        vert_vel=self%w
      case (1)
-      !vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
-      vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * org%limNP))
+      !vert_vel=self%w * (1-1/(1+exp(10*(.5-min(org%QPr,org%QNr)))))
+      vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * min(org%QPr,org%QNr)))
      _SET_DIAGNOSTIC_(self%id_sinkvel,vert_vel*s2d)
+     !write(*,*)'org%limNP,exp( -5._rk * org%limNP),vert_vel:',org%limNP,exp( -5._rk * org%limNP),vert_vel*s2d
    end select
    !
    !END OF WRITE
@@ -604,7 +608,7 @@
 !
 ! !LOCAL VARIABLES:
    real(rk)                   :: vert_vel,temp,par,I0
-   real(rk)                   :: Qr,QPr,QNr !,yearday,par
+   real(rk)                   :: QPr,QNr !,yearday,par
    real(rk), parameter        :: s2d= 86400.
 !
 !EOP
@@ -625,9 +629,8 @@
      case (1)  !sinking velocity decreases with increasing quota
        _GET_ (self%id_QPr_dep,QPr)
        _GET_ (self%id_QNr_dep,QNr)
-       Qr=min(QPr,QNr)
-      !vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
-      vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * Qr))
+      !vert_vel=self%w * (1-1/(1+exp(10*(.5-min(QPr,QNr)))))
+      vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * min(QPr,QNr)))
    end select
 
    !Set these calculated vertical_movement values
