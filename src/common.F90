@@ -11,13 +11,16 @@ module gpm_common
    
    real(rk),parameter :: molqperday_per_W=1.0_rk/0.4_rk ![W/m2 = 0.4 mol quanta/m2/d ] Cloern et al 1995
    real(rk),parameter :: CMass   = 12.011_rk
-   real(rk),parameter :: qnRF = 14._rk/106._rk
-   real(rk),parameter :: qpRF = 1._rk/106._rk
-   real(rk),parameter :: qsRF = 15._rk/106._rk
+   !real(rk),parameter :: qnRF = 16._rk/106._rk
+   !real(rk),parameter :: qpRF = 1._rk/106._rk
+   !real(rk),parameter :: qsRF = 15._rk/106._rk
    real(rk), parameter :: pi=acos(-1._rk)
    real(rk), parameter :: s2d = 86400.
    real(rk), parameter :: tres_pXn= 0.0    ! treshold value for phytoplankton losses and mortality
-   real(rk), parameter :: TINY=1.0e-3      !a small number, e.g., used as the treshold value for exudation
+   real(rk), parameter :: TINY=1.0e-1      !a small number, e.g., used as the treshold value for exudation
+   real(rk), parameter :: TINY_P=1._rk/106._rk !used for P uptake
+   real(rk), parameter :: TINY_N=16._rk/106._rk !used for N uptake
+   real(rk), parameter :: TINY_Si=15._rk/106._rk !used for N uptake
    real(rk), parameter :: eps     = 1.0e-6 ! number smaller than "TINY", e.g, used as the treshold value for mortality
    
    ! !PUBLIC DERIVED TYPES:
@@ -491,12 +494,12 @@ module gpm_common
    !org%lim_N = di%N/(di%N+apar%Kn)
    !when NO3 and NH3 are resolved
    
-   if (di%NO3 .lt. TINY) then
+   if (di%NO3 .lt. TINY_N*0.2_rk) then
      mno3=0.0_rk
    else
      mno3=di%NO3/apar%kno3
    end if
-   if (di%NH4 .lt. TINY) then
+   if (di%NH4 .lt. TINY_N*0.8_rk) then
      mnh4=0.0_rk
    else
      mnh4=di%NH4/apar%knh4
@@ -511,7 +514,7 @@ module gpm_common
    org%lim_N = org%lim_no3+org%lim_nh4
    
    !P limitation: choose between dip/dop
-   if (di%P .lt. TINY) then
+   if (di%P .lt. TINY_P) then
      org%lim_dip= 0.0_rk
    else
      org%lim_dip= di%P/(di%P+apar%Kp)
@@ -519,7 +522,7 @@ module gpm_common
    org%lim_P=org%lim_dip
    org%dop_uptake=.false.
    if (apar%dop_allowed) then
-     if (dom%P .lt. TINY) then
+     if (dom%P .lt. TINY_P) then
        org%lim_dop = 0.0_rk
      else
        org%lim_dop = dom%P/(dom%P+apar%Kp)
@@ -600,7 +603,7 @@ module gpm_common
      !QUOTAS
      org%Si=org%C / apar%C2Si !for consistency
      !LIMITATION
-     if (di%Si .lt. TINY) then
+     if (di%Si .lt. TINY_Si) then
        lim%Si=0.0_rk
      else
        lim%Si=di%Si/(di%Si+apar%Ksi)
