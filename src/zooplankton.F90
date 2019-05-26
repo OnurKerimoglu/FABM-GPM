@@ -381,9 +381,15 @@
      write (istr,'(i0)') i
      !C
      _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
+     if (prdat%C(i) .lt. TINYPREYC) then
+       prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
+     end if
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
        _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
+       if (prdat%P(i) .lt. TINYPREYC/106._rk) then
+         prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
+       end if
      else
        if (self%prpar(i)%C2P .lt. 0.0_rk) then
          call self%fatal_error('gpm_zooplankton_do','for prey'//trim(istr)//', no explicit P variable was coupled, or no (>0) C2P par was provided')
@@ -393,6 +399,9 @@
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
        _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
+       if (prdat%N(i) .lt. TINYPREYC*16._rk/106._rk) then
+         prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
+       end if
      else
        if (self%prpar(i)%C2N .lt. 0.0_rk) then
          call self%fatal_error('gpm_zooplankton_do','for prey'//trim(istr)//', no explicit N variable was coupled, or no (>0) C2N par was provided')
@@ -411,6 +420,9 @@
      prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
        _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
+       if (prdat%Chl(i) .lt. TINYPREYC/20._rk) then
+         prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
+       end if
      end if
      !Si:
      if (self%resolve_Si) then

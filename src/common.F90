@@ -21,6 +21,7 @@ module gpm_common
    real(rk), parameter :: TINY_P=1._rk/106._rk !used for P uptake
    real(rk), parameter :: TINY_N=16._rk/106._rk !used for N uptake
    real(rk), parameter :: TINY_Si=15._rk/106._rk !used for N uptake
+   real(rk), parameter :: TINYPREYC =0.1_rk    ! the minimum prey-C concentration [mmolC/m3] detectable by predators
    real(rk), parameter :: eps     = 1.0e-6 ! number smaller than "TINY", e.g, used as the treshold value for mortality
    
    ! !PUBLIC DERIVED TYPES:
@@ -272,19 +273,26 @@ module gpm_common
       else
         prdat%rpref(i)=prdat%corpref(i)
       end if
-      !weight of food-i among all available food
-      org%KzFact=1.0
-      prdat%weight(i)       = org%get_fMon(prdat%C(i),prdat%rpref(i),org%ftotC,mpar%Kz*org%KzFact)
-      !grazing rate of the item
-      prdat%grC(i)       = gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
-      prdat%grP(i)       = prdat%grC(i)         * prdat%P(i)/prdat%C(i)  !molPprey/molCpred/d
-      prdat%grN(i)       = prdat%grC(i)         * prdat%N(i)/prdat%C(i)  !molNprey/molCpred/d
-      prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
-      prdat%grSi(i)      = prdat%grC(i)       * prdat%Si(i)/prdat%C(i) !molChlprey/molChlpred/d
-      !molXprey/molCpred/d = molCprey/molCpred/d  * molXprey/molCprey
-      
-      !write(*,*),' '//trim(mpar%name)//' prey#',i,'grC,prC,pref,ftotC',prdat%grC(i),prdat%C(i),prdat%rpref(i),ftotC
-
+      if (prdat%C(i) .eq. 0.0) then
+        prdat%weight(i)=0.0
+        prdat%grC(i)=0.0
+        prdat%grP(i)=0.0
+        prdat%grN(i)=0.0
+        prdat%grChl(i)=0.0
+        prdat%grSi(i)=0.0
+      else
+        !weight of food-i among all available food
+        org%KzFact=1.0
+        prdat%weight(i)       = org%get_fMon(prdat%C(i),prdat%rpref(i),org%ftotC,mpar%Kz*org%KzFact)
+        !grazing rate of the item
+        prdat%grC(i)       = gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
+        prdat%grP(i)       = prdat%grC(i)         * prdat%P(i)/prdat%C(i)  !molPprey/molCpred/d
+        prdat%grN(i)       = prdat%grC(i)         * prdat%N(i)/prdat%C(i)  !molNprey/molCpred/d
+        prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
+        prdat%grSi(i)      = prdat%grC(i)       * prdat%Si(i)/prdat%C(i) !molChlprey/molChlpred/d
+        !molXprey/molCpred/d = molCprey/molCpred/d  * molXprey/molCprey
+        !write(*,*),' '//trim(mpar%name)//' prey#',i,'grC,prC,pref,ftotC',prdat%grC(i),prdat%C(i),prdat%rpref(i),ftotC
+      end if
    END DO
    
    !write(*,'(A, 2F13.10)'),' '//trim(GPMpl%name)//' grSi:',prdat%grSi  
