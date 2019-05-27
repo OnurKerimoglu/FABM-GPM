@@ -806,7 +806,7 @@ module gpm_common
    class(org_autotrophic)       :: org
    type(type_GPMaut), intent(in) :: apar
    type(type_env), intent(in)    :: env
-   real(rk)                      :: Idm_Q,Pmax,K_I
+   real(rk)                      :: Idm_Q,Pmax,K_I,Chl2Cmin
 !
 !EOP
 !-----------------------------------------------------------------------
@@ -824,9 +824,17 @@ module gpm_common
        !write(*,*)'common L786. metchl: ',apar%metchl,'Idm: ',Idm,'QChl:',org%QChl
      case(2) ! Geider 1997, instant (balanced growth)
        Idm_Q=molqperday_per_W*env%Idm/s2d !W/m2 * mmq/d *d/s= molQ/s/m2
+       Chl2Cmin=apar%Chl2Cmax*0.1_rk
        Pmax=org%vC_fTfnp
-       K_I=Pmax/apar%Chl2Cmax*apar%islope_perchl
-       org%QChl=apar%Chl2Cmax/(1+ Idm_Q/(2*K_I))
+       if (Pmax .gt. 0.0_rk) then
+         K_I=Pmax/apar%Chl2Cmax*apar%islope_perchl
+         org%QChl=apar%Chl2Cmax/(1+ Idm_Q/(2*K_I))
+         !minimum allowed is %10 of Chl2Cmax
+         org%Qchl=max(Chl2Cmin,org%QChl)
+       else
+         !if Pmax=0 (e.g., due to extreme nut limitation), set Chl2C=Chl2Cmin
+         org%QChl=Chl2Cmin
+       end if
    end select
    
    select case (apar%metchl)
