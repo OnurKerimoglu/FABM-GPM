@@ -1,9 +1,10 @@
 instances: 
   EH_abioS:
-    use: .true.
+    use: .false.
     long_name: EH-sediment
     model: ecoham/abio_sed
     parameters:
+      resolve_DIC: .true.     # whether to resolve DIC
       resolve_Si: .true.      # whether to resolve Si-cycle
       coupled2water: .true.   # whether the benthic model is coupled to a pelagic model
       det1_wsed : 0.1         # sedimentation rate of pelagic detritus
@@ -19,11 +20,12 @@ instances:
       PON : 16             # initial benthic organic nitrogentus
       POSi : 15.0         # initial benthic organic silicate (opal)
     coupling:
-      pelagic_O2 : EH_abioP/O2      # pelagic O2
-      pelagic_DIP : EH_abioP/DIP      # pelagic dissolved inorganic phosphorus
-      pelagic_NH4: EH_abioP/DINH4    # pelagic NH4
-      pelagic_NO3: EH_abioP/DINO3    # pelagic NO3
-      pelagic_DISi : EH_abioP/DISi    # pelagic dissolved inorganic silicate
+      pelagic_O2 : EH_abioP/O2          # pelagic O2
+      pelagic_DIC : EH_abioP/DIC        # pelagic dissolved inorganic carbon
+      pelagic_DIP : EH_abioP/DIP        # pelagic dissolved inorganic phosphorus
+      pelagic_NH4: EH_abioP/DINH4       # pelagic NH4
+      pelagic_NO3: EH_abioP/DINO3       # pelagic NO3
+      pelagic_DISi : EH_abioP/DISi      # pelagic dissolved inorganic silicate
       pelagic_det1C : EH_abioP/det1C    # pelagic detrital carbon 
       pelagic_det1P : EH_abioP/det1P    # pelagic detrital phosphorus 
       pelagic_det1N : EH_abioP/det1N    # pelagic detrital nitrogen
@@ -37,6 +39,7 @@ instances:
     model: ecoham/abio_pel
     parameters:
       Idm_met: 0              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      resolve_DIC: .true.     # whether to resolve DIC
       resolve_Si: .true.      # whether to resolve Si-cycle
       flux_diags: .true.      # whether to output flux diagnostics
       metCexc: 0              # method to calculate excess C-uptake, 0:no excess utpake; 1: as in EH
@@ -58,7 +61,7 @@ instances:
       rhoN : 0.1              # [/d] Direct DOM rem. (will be set to 0 if resolve_bac)
       rhoP : 0.1              # [/d] Direct DON rem. (will be set to 0 if resolve_bac)
       xknit: 0.02             # Nitrificaiton rate
-      resolve_bac: .false.     # whether to resolve bacterial remineralization
+      resolve_bac: .true.     # whether to resolve bacterial remineralization
       b_exc : 0.2             # excretion rate of bac
       b_v : 0.5               # max upt rate of bac
       b_xk4: 0.2              # half sat conc for DIN upt of bac
@@ -67,13 +70,12 @@ instances:
       b_rcp: 50.0             # molar C:P  ratio of bac
     initialization:
       O2   : 320              # initial O2 [mmolO2/m3]
+      DIC : 100000.0          # initial dissolved inorganic carbon
       DIP : 1.0               # initial dissolved inorganic phosphorus
       DINO3 : 14.40           # initial dissolved inorganic NO3
       DINH4 : 1.60            # initial dissolved inorganic NH4
       DISi :  20.0             # initial dissolved inorganic silica
-      #bacC: 1.0               # initial bacterial carbon
-      #bacP : 0.02             # initial bacterial phosphorus
-      #bacN : 0.32             # initial bacterial nitrogen
+      bacC: 1.0               # initial bacterial carbon
       #SOC : 1000.0           # initial semi-labile organic carbon
       DOC : 1.06              # initial dissolved organic carbon
       DOP : 0.01               # initial dissolved organic phosphorus
@@ -91,13 +93,14 @@ instances:
     model: gpm/phytoplankton
     parameters:
       Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      resolve_DIC: .true.    # whether to resolve DIC
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .true.         # whether limited by Silicate
       dop_allowed: .false.   # whether the DOP is available for uptake
       metext: 0              # method for calculating light extinction. 0: C*kc; 1: chl*kchl
       kc: 0.02               # [m2/mmolC] specific light ext. coefficient
       #kchl: 0.023            # Chl-specific light ext. coefficient                  
-      metvel: 1              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      metvel: 1              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
       w : -3.0               # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
@@ -134,6 +137,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # pelagic dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -143,7 +147,7 @@ instances:
       DON : EH_abioP/DON          # pelagic dissolved organic nitrogen
       #SOC : EH_abioP/SOC         # dissolved semi-labile organic carbon
       det1C : EH_abioP/det1C      # detrital carbon -slow sinking
-      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking91e73154a2e9396f5de330ea55f3ea8dfc58f430
+      det1P : EH_abioP/det1P      # detrital phosphorus -slow sinking
       det1N : EH_abioP/det1N      # detrital nitrogen -slow sinking
       det2C : EH_abioP/det2C      # detrital carbon -fast sinking
       det2P : EH_abioP/det2P      # detrital phosphorus -fast sinking
@@ -155,14 +159,15 @@ instances:
     model: gpm/phytoplankton
     parameters:
       Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      resolve_DIC: .true.    # whether to resolve DIC
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
-      dop_allowed: .false.   #whether the DOP is available for uptake
-      metext: 0              #method for calculating light extinction. 0: C*kc; 1: chl*kchl
+      dop_allowed: .false.   # whether the DOP is available for uptake
+      metext: 0              # method for calculating light extinction. 0: C*kc; 1: chl*kchl
       kc: 0.02               # [m2/mmolC] specific light ext. coefficient
       #kchl: 0.023            #Chl-specific light ext. coefficient                  
-      metvel: 1              #method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
-      w : -0.5                # vertical velocity (<0 for sinking)
+      metvel: 1              # method for calculating sinking velocity. 0: w; 1: w*f(QP,QN)
+      w : -0.5               # vertical velocity (<0 for sinking)
       metTresp : 1           # temperature response for growth. 0:f(T)=1; 1:Q10; 2:Q10-v.EH 
       Q10 : 1.5              # Q10 for autotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
@@ -181,7 +186,7 @@ instances:
       #VNmax : 2.5            # max. P uptake rate (if metIntSt=1)
       Kp : 0.1               # half sat. conc. for P uptake 
       Kno3 : 1.0             # half sat. conc. for NO3 uptake 
-      Knh4 : 0.25             # half sat. conc. for NH4 uptake 
+      Knh4 : 0.25             # half sat. conc. for NH4 uptake
       metIresp : 20          # light response method. 1: monod; 10: light inh.; 2,20: Chl2C specific, 2: based on f(Idm), 20: based on par; 1,10 req. islope; 2,20 requires islope_perchl
       #islope : 0.4           # initial slope (if lightresp== 1,10)
       islope_perchl: 8.0    # [gCm2/gChl/molQ] initial slope (if lightresp==2,20)
@@ -196,6 +201,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # pelagic dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -215,6 +221,7 @@ instances:
     model: gpm/phytoplankton
     parameters:
       Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      resolve_DIC: .true.   # whether to resolve DIC
       resolve_Si: .true.     # whether to resolve Si-cycle
       lim_Si: .false.        # whether limited by Silicate
       dop_allowed: .true.    # whether the DOP is available for uptake
@@ -256,6 +263,7 @@ instances:
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
       O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC             # pelagic dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4
@@ -275,6 +283,7 @@ instances:
     model: gpm/mixotroph
     parameters: 
       Idm_met: 0             # method to daily mean light. 0: none, 1: I0dm, 2: PARdm
+      resolve_DIC: .true.    # whether to resolve DIC
       resolve_Si: .true.     # whether to resolve Si-cycle
       fracaut: 0.5           # fraction of autotrophy
       metext: 0              # method for calculating light extinction. 0: C*kc
@@ -318,18 +327,22 @@ instances:
       asefN : .8             # assimilation efficiency  for ingested N
       unas_detfrac: 1.0      # detritus fraction of the unassimmilated Ingestion
       dynpref : .true.       # dynamical adjustment of preferences (fasham 1990?)
-      num_prey : 3           # number of prey targets
-      prey1pref : 0.4        # preference factor for prey1
-      prey2pref : 0.4        # preference factor for prey2
+      num_prey : 4           # number of prey targets
+      prey1pref : 0.3        # preference factor for prey1
+      prey2pref : 0.3        # preference factor for prey2
       prey2C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
       prey2C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
-      prey3pref : 0.2        # preference factor for prey3
+      prey3pref : 0.1        # preference factor for prey3
       prey3C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
       prey3C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
+      prey4pref : 0.3        # preference factor for prey4
+      prey4C2N : 5.0         # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey4C2P: 50.0         # C:P ratio of the prey (should be set only if boundP is not coupled)
     initialization:
       C : 1.0              # initial carbon
     coupling:
       #PARdm: EH_abioP/PARdm       # I daily mean (requires abio_pel/Idm_met: 1 (I0dm) or 2 (PARdm)
+      DIC : EH_abioP/DIC          # pelagic dissolved inorganic carbon
       O2  : EH_abioP/O2           # pelagic O2
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINO3 : EH_abioP/DINO3      # dissolved inorganic NO3
@@ -351,11 +364,13 @@ instances:
       prey1N : EH_abioP/det1N     # N of grazing target
       prey2C : GPM_nf/C           # C of grazing target
       prey3C : GPM_pha/C          # C of grazing target
+      prey4C : EH_abioP/bacC      # C of grazing target
   GPM_miczoo:
     use: .true.
     long_name: GPM-microzooplankton
     model: gpm/zooplankton
     parameters: 
+      resolve_DIC: .true.    # whether to resolve DIC
       resolve_Si: .true.     # whether to resolve Si-cycle
       metext: 0              # method for calculating light extinction. 0: C*kc
       kc: 0.02               # [m2/mmolC] specific light ext. coefficient
@@ -365,7 +380,7 @@ instances:
       Q10 : 1.5              # Q10 for heterotrophic processes  (if tempresp==2)
       Tref: 10.0             # reference Temperature
       rmd : 0.02             # linear mortality rate
-      rmdq : 0.03           # quadratic mortality rate
+      rmdq : 0.03            # quadratic mortality rate
       metIntSt: 0            # method to calculate internal states, 0: fixed stoich, 1: dynamic
       C2N: 6.625             # C:N ratio, if metIntSt=0 (fixed)
       C2P: 106               # C:P ratio, if metIntSt=0
@@ -381,26 +396,29 @@ instances:
       asefN : .8             # assimilation efficiency  for ingested N
       unas_detfrac: 1.0      # detritus fraction of the unassimmilated Ingestion
       dynpref : .true.       # dynamical adjustment of preferences (fasham 1990?)
-      num_prey : 5           # number of prey targets
+      num_prey : 6           # number of prey targets
       prey1pref : 0.3        # preference factor for prey1
-      prey2pref : 0.3        # preference factor for prey2
+      prey2pref : 0.2        # preference factor for prey2
       prey2C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
       prey2C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
       prey3pref : 0.1        # preference factor for prey3
       prey3C2Si : 5.76       # Si:C ratio of prey3
       prey3C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
       prey3C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
-      prey4pref : 0.2        # preference factor for prey3
+      prey4pref : 0.1        # preference factor for prey4
       prey4C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
       prey4C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
-      prey5pref : 0.1        # preference factor for prey4
+      prey5pref : 0.1        # preference factor for prey5
       prey5C2N : 6.625       # C:N ratio of the prey (should be set only if boundN is not coupled)
       prey5C2P: 106          # C:P ratio of the prey (should be set only if boundP is not coupled)
-      #prey6pref : 0.3        # preference factor for prey5
+      prey6pref : 0.2        # preference factor for prey6
+      prey6C2N : 5.0         # C:N ratio of the prey (should be set only if boundN is not coupled)
+      prey6C2P: 50.0         # C:P ratio of the prey (should be set only if boundP is not coupled)
     initialization:
       C : 1.0                # initial carbon
     coupling:
       O2  : EH_abioP/O2         # pelagic O2
+      DIC : EH_abioP/DIC        # pelagic dissolved inorganic carbon
       DIP : EH_abioP/DIP        # dissolved inorganic phosphorus
       DINH4 : EH_abioP/DINH4    # dissolved inorganic NH4 
       DISi : EH_abioP/DISi      # dissolved inorganic silica 
@@ -421,14 +439,13 @@ instances:
       prey3C : GPM_diat/C        # C of grazing target
       prey4C : GPM_pha/C        # C of grazing target
       prey5C : GPM_mixo/C       # C of grazing target
-      #prey5C : EH_abioP/bacC    # C of grazing target
-      #prey5P : EH_abioP/bacP    # P of grazing target
-      #prey5N : EH_abioP/bacN    # N of grazing target
+      prey6C : EH_abioP/bacC    # C of grazing target
   GPM_meszoo:
     use: .true.
     long_name: GPM-mesozooplankton
     model: gpm/zooplankton
     parameters: 
+      resolve_DIC: .true.    # whether to resolve DIC
       resolve_Si: .true.     # whether to resolve Si-cycle
       metext: 0              # method for calculating light extinction. 0: C*kc
       kc: 0.02               # [m2/mmolC] specific light ext. coefficient
@@ -472,6 +489,7 @@ instances:
       C : 1.0                # initial carbon
     coupling:
       O2  : EH_abioP/O2           # pelagic O2
+      DIC : EH_abioP/DIC          # pelagic dissolved inorganic carbon
       DIP : EH_abioP/DIP          # dissolved inorganic phosphorus
       DINH4 : EH_abioP/DINH4      # dissolved inorganic NH4 
       DISi : EH_abioP/DISi        # dissolved inorganic silica 

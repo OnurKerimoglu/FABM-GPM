@@ -45,6 +45,7 @@ def plot_main():
       varnames= [ 'temp','nuh','attenuation_coefficient_of_photosynthetic_radiative_flux_calculator_result',
                 'EH_abioP_O2_percSat','total_chlorophyll_calculator_result','total_NPPR_calculator_result',
                 'EH_abioP_DINO3', 'EH_abioP_DIP','EH_abioP_DISi',
+                'EH_abioP_DIC','EH_abioP_DOC','EH_abioP_bacC',
                 'EH_abioP_DINH4','EH_abioP_det1C', 'EH_abioP_det2C',
                 'GPM_diat_C','GPM_nf_C','GPM_pha_C',
                 'GPM_mixo_C','GPM_miczoo_C','GPM_meszoo_C']
