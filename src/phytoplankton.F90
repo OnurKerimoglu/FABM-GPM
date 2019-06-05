@@ -131,7 +131,7 @@
    
    ! Register state variables
    call self%register_state_variable(self%id_boundC,'C','mmolC/m^3','bound carbon', & 
-                                    minimum=_ZERO_)
+                                    minimum=_ZERO_,no_river_dilution=.true.)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_boundC)
    if (self%metIntSt .eq. 0) then
      !call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
@@ -142,9 +142,9 @@
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundC,scale_factor=1./self%C2N)
    else if (self%metIntSt .eq. 1) then  ! .or. (self%metIntSt .eq. 0) !(for debugging purposes)
      call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
-                                    minimum=_ZERO_)
+                                    minimum=_ZERO_,no_river_dilution=.true.)
      call self%register_state_variable(self%id_boundN,'N','mmolN/m^3','bound nitrogen', & 
-                                    minimum=_ZERO_)
+                                    minimum=_ZERO_,no_river_dilution=.true.)
      call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_boundP)                             
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundN)
    end if
@@ -268,7 +268,7 @@
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_diagChl)
      case (20)
        call self%register_state_variable(self%id_boundChl,'Chl','mg/m^3','bound Chlorophyll', & 
-                                    minimum=_ZERO_)
+                                    minimum=_ZERO_,no_river_dilution=.true.)
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_boundChl)
        call self%register_diagnostic_variable(self%id_chlrho,'Rho_per_Tmax','-', 'regulatory factor for chl synthesis (rho/Tmax in G97 eq.4)', &
                                           output=output_time_step_averaged) 
