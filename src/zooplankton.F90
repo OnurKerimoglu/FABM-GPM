@@ -194,20 +194,20 @@
      !call self%register_diagnostic_variable(self%id_QP,'QP','molP/molC', 'fixed molar P:C ratio',         &
      !                                     output=output_time_step_averaged)
      call self%register_diagnostic_variable(self%id_QPr,'QPr','-', 'P limitation as estimated by Monod approach',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QNr,'QNr','-', 'N limitation as estimated by Monod approach',         &
-                                          output=output_time_step_averaged)                                          
+                                          output=output_instantaneous)                                          
    else if ((self%metIntSt .eq. 1)) then  
      call self%register_diagnostic_variable(self%id_QP,'QP','molP/molC', 'molar P:C ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QPr,'QPr','-', '(QP-QPmin)/(QPmax-QPmin)',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QN,'QN','molN/molC', 'molar N:C ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QNr,'QNr','-', '(QN-QNmin)/(QNmax-QNmin)',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_N2P,'N2P','molN/molP', 'molar N:P ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
     else 
       call self%fatal_error('phytoplankton.F90/initialize:','for '//trim(self%name)// ' specified metIntSt  option is not available')
    end if
@@ -235,7 +235,7 @@
    call self%register_diagnostic_variable(self%id_IngasC,'Ingas_C','/d', 'sp. C gain rate by heterotrophy',   &
                                           output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_asefC,'asef_C','-',  'assimilation efficiency of C', &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
    
    call self%register_diagnostic_variable(self%id_IngP,'Ing_P','molP/molC/d', 'total sp. P grazing rate', &
                                           output=output_time_step_averaged)
@@ -244,7 +244,7 @@
    call self%register_diagnostic_variable(self%id_IngasP,'Ingas_P','/d', 'sp. P gain rate by herbivory',   &
                                           output=output_time_step_averaged) 
    call self%register_diagnostic_variable(self%id_asefP,'asef_P','-',  'assimilation efficiency of P', &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
 
    call self%register_diagnostic_variable(self%id_IngN,'Ing_N','molN/molC/d', 'total sp. N grazing rate', &
                                           output=output_time_step_averaged)
@@ -253,7 +253,7 @@
    call self%register_diagnostic_variable(self%id_IngasN,'Ingas_N','/d', 'sp. N gain rate by herbivory',   &
                                           output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_asefN,'asef_N','-',  'assimilation efficiency of N', &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
    if (self%resolve_Si) then
      call self%register_diagnostic_variable(self%id_IngunasSi,'Ingunas_Si','/d',  'unassimilated fraction of sp. ingestion of Si', &
                                           output=output_time_step_averaged) 

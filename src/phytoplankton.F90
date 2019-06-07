@@ -203,20 +203,20 @@
      !call self%register_diagnostic_variable(self%id_QP,'QP','molP/molC', 'fixed molar P:C ratio',         &
      !                                     output=output_time_step_averaged)
      call self%register_diagnostic_variable(self%id_QPr,'QPr','-', 'P limitation as estimated by Monod approach',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QNr,'QNr','-', 'N limitation as estimated by Monod approach',         &
-                                          output=output_time_step_averaged)                                          
+                                          output=output_instantaneous)                                          
    else if ((self%metIntSt .eq. 1)) then  
      call self%register_diagnostic_variable(self%id_QP,'QP','molP/molC', 'molar P:C ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QPr,'QPr','-', '(QP-QPmin)/(QPmax-QPmin)',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QN,'QN','molN/molC', 'molar N:C ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_QNr,'QNr','-', '(QN-QNmin)/(QNmax-QNmin)',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
      call self%register_diagnostic_variable(self%id_N2P,'N2P','molN/molP', 'molar N:P ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
     else 
       call self%fatal_error('phytoplankton.F90/initialize:','for '//trim(self%name)// ' specified metIntSt  option is not available')
    end if
@@ -230,11 +230,11 @@
                                           
    ! Autototrophy
    call self%register_diagnostic_variable(self%id_Ilim,'limI','-', 'Light limitation',  &
-                                          output=output_time_step_averaged) 
+                                          output=output_instantaneous) 
    call self%register_diagnostic_variable(self%id_Plim,'limP','-', 'P limitation',  &
-                                          output=output_time_step_averaged)   
+                                          output=output_instantaneous)   
    call self%register_diagnostic_variable(self%id_Nlim,'limN','-', 'N limitation',  &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
    call self%register_diagnostic_variable(self%id_MuClim_A,'MuClimA','/d', 'contribution of autotrophy to C-lim growth',&
                                         output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_NPPR,'NPPR','/d','-NPPR',              &
@@ -252,7 +252,7 @@
                                            
    if (self%lim_Si) then
      call self%register_diagnostic_variable(self%id_Silim,'limSi','-', 'Si limitation',  &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
    end if
   
    select case (self%metchl)
@@ -260,28 +260,28 @@
        call self%fatal_error('phytoplankton.F90/initialize:','for '//trim(self%name)// ' specified metchl option is not available')
      case (0)
        call self%register_diagnostic_variable(self%id_diagChl,'Chl','mg/m^3', 'Chl estimated from a fixed Chl:C ratio',         &
-                                          output=output_time_step_averaged)
+                                          output=output_instantaneous)
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_diagChl)
      case (1,2)
        call self%register_diagnostic_variable(self%id_diagChl,'Chl','mg/m^3', 'diagnostically calculated Chl concentration',         &
-                                          output=output_time_step_averaged)  
+                                          output=output_instantaneous)  
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_diagChl)
      case (20)
        call self%register_state_variable(self%id_boundChl,'Chl','mg/m^3','bound Chlorophyll', & 
                                     minimum=_ZERO_,no_river_dilution=.true.)
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_boundChl)
        call self%register_diagnostic_variable(self%id_chlrho,'Rho_per_Tmax','-', 'regulatory factor for chl synthesis (rho/Tmax in G97 eq.4)', &
-                                          output=output_time_step_averaged) 
+                                          output=output_instantaneous) 
    end select 
   
    if (self%metchl .ne. 0) then
     call self%register_diagnostic_variable(self%id_QChl,'QChl','gChl/gC', 'diagnostically calculated Chl:C ratio',         &
-                                          output=output_time_step_averaged) 
+                                          output=output_instantaneous) 
    end if
    
    if (self%metvel .gt. 0) then
     call self%register_diagnostic_variable(self%id_sinkvel,'sinkvel','m s-1', 'sinking velocity',         &
-                                          output=output_time_step_averaged) 
+                                          output=output_instantaneous) 
    end if
    
    !contribute to aggregate variables
