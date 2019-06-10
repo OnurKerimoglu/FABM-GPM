@@ -143,12 +143,16 @@
      
      ! logic: access coupled the state variable 'prey(i)X', and parameter 'prey(i)C2X'. If prey(i)X is not available, prey(i)C2X will be used to calc X
      !P
-     call self%register_state_dependency(self%prpar(i)%id_P,'prey'//trim(istr)//'P','mmolP/m^3','bound phosphorus in prey'//trim(istr), required=.false.)
      call self%get_parameter(self%prpar(i)%C2P, 'prey'//trim(istr)//'C2P',     '-',       'prey'//trim(istr)//' C:P ratio',  default=-1.0_rk)
-     
+     if (self%prpar(i)%C2P .lt. 0.0) then 
+       call self%register_state_dependency(self%prpar(i)%id_P,'prey'//trim(istr)//'P','mmolP/m^3','bound phosphorus in prey'//trim(istr), required=.false.)
+     end if 
+ 
      !N
-     call self%register_state_dependency(self%prpar(i)%id_N,'prey'//trim(istr)//'N','mmolN/m^3','bound nitrogen in prey'//trim(istr), required=.false.)
      call self%get_parameter(self%prpar(i)%C2N, 'prey'//trim(istr)//'C2N',     '-',       'prey'//trim(istr)//' C:N ratio',  default=-1.0_rk)
+     if (self%prpar(i)%C2N .lt. 0.0) then 
+       call self%register_state_dependency(self%prpar(i)%id_N,'prey'//trim(istr)//'N','mmolN/m^3','bound nitrogen in prey'//trim(istr), required=.false.)
+     end if 
      
      !Chl
      call self%register_state_dependency(self%prpar(i)%id_Chl,'prey'//trim(istr)//'Chl','mg/m^3','bound Chlorophyll in prey'//trim(istr), required=.false.)
@@ -382,12 +386,15 @@
      write (istr,'(i0)') i
      !C
      _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
+     !write(*,'(A,I1,2F7.4)'),'L385 Cprey#',i,prdat%C(i),TINYPREYC
      if (prdat%C(i) .lt. TINYPREYC) then
        prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
+       !write(*,'(A,I1,1F7.4)'),'L388 Cprey#',i,prdat%C(i)
      end if
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
        _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
+       !write(*,'(A,I1,2F7.4)'),'L393 Pprey#',i,prdat%P(i),TINYPREYC/106._rk
        if (prdat%P(i) .lt. TINYPREYC/106._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
        end if
@@ -400,6 +407,7 @@
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
        _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
+       !write(*,'(A,I1,2F7.4)'),'L406 Nprey#',i,prdat%N(i),TINYPREYC*16._rk/106._rk
        if (prdat%N(i) .lt. TINYPREYC*16._rk/106._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
        end if
@@ -421,6 +429,7 @@
      prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
        _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
+       !write(*,'(A,I1,2F7.4)'),'L428 Chlprey#',i,prdat%Chl(i),TINYPREYC/20._rk
        if (prdat%Chl(i) .lt. TINYPREYC/20._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
        end if
