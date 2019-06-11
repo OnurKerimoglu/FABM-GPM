@@ -168,12 +168,16 @@
      
      ! logic: access coupled the state variable 'prey(i)X', and parameter 'prey(i)C2X'. If prey(i)X is not available, prey(i)C2X will be used to calc X
      !P
-     call self%register_state_dependency(self%prpar(i)%id_P,'prey'//trim(istr)//'P','mmolP/m^3','bound phosphorus in prey'//trim(istr), required=.false.)
      call self%get_parameter(self%prpar(i)%C2P, 'prey'//trim(istr)//'C2P',     '-',       'prey'//trim(istr)//' C:P ratio',  default=-1.0_rk)
-
+     if (self%prpar(i)%C2P .lt. 0.0) then 
+       call self%register_state_dependency(self%prpar(i)%id_P,'prey'//trim(istr)//'P','mmolP/m^3','bound phosphorus in prey'//trim(istr), required=.false.)
+     end if 
+     
      !N
-     call self%register_state_dependency(self%prpar(i)%id_N,'prey'//trim(istr)//'N','mmolN/m^3','bound nitrogen in prey'//trim(istr), required=.false.)
      call self%get_parameter(self%prpar(i)%C2N, 'prey'//trim(istr)//'C2N',     '-',       'prey'//trim(istr)//' C:N ratio',  default=-1.0_rk)
+     if (self%prpar(i)%C2N .lt. 0.0) then 
+       call self%register_state_dependency(self%prpar(i)%id_N,'prey'//trim(istr)//'N','mmolN/m^3','bound nitrogen in prey'//trim(istr), required=.false.)
+     end if
      
      !Chl
      call self%register_state_dependency(self%prpar(i)%id_Chl,'prey'//trim(istr)//'Chl','mg/m^3','bound Chlorophyll in prey'//trim(istr), required=.false.)
