@@ -6,6 +6,7 @@ instances:
     parameters:
       resolve_DIC: .true.     # whether to resolve DIC
       resolve_Si: .true.      # whether to resolve Si-cycle
+      sorpmeth : 1            # method to calculate sorbed-fraction of sediment-P
       coupled2water: .true.   # whether the benthic model is coupled to a pelagic model
       det1_wsed : 0.1         # sedimentation rate of pelagic detritus
       det2_wsed : 1.0        # sedimentation rate of pelagic detritus
@@ -14,6 +15,7 @@ instances:
       brn : 0.0333            # benthic rem rate for N
       brp : 0.0333            # benthic rem rate for P
       brsi: 0.0130            # benthic rem rate for Si
+      do_sorpeq: 250.0      # [mmolO2/m^3], DO threshold at which sorption exceeds desorption [if sorpmeth=1,2]
     initialization:
       POC : 106            # initial benthic organic carbon
       POP : 1.             # initial benthic organic phosphorus
