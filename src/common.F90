@@ -502,12 +502,12 @@ module gpm_common
    !org%lim_N = di%N/(di%N+apar%Kn)
    !when NO3 and NH3 are resolved
    
-   if (di%NO3 .lt. TINY_N*0.2_rk) then
+   if (di%NO3 .lt. TINY_N*0.9_rk) then
      mno3=0.0_rk
    else
      mno3=di%NO3/apar%kno3
    end if
-   if (di%NH4 .lt. TINY_N*0.8_rk) then
+   if (di%NH4 .lt. TINY_N*0.1_rk) then
      mnh4=0.0_rk
    else
      mnh4=di%NH4/apar%knh4
