@@ -578,10 +578,10 @@ module gpm_common
    else if (apar%metIntSt .eq. 1) then
      
      !QUOTAS
-     org%QP=org%P/org%C
-     org%QPr=min(_ONE_,max(_ZERO_,(org%QP-apar%QPmin)/(apar%QPmax-apar%QPmin)))
-     org%QN=org%N/org%C
-     org%QNr=min(_ONE_,max(_ZERO_,(org%QN-apar%QNmin)/(apar%QNmax-apar%QNmin)))
+     org%QP=min(apar%QPmax,max(apar%QPmin,org%P/org%C)) !make sure that Q remains within the bounds
+     org%QPr=(org%QP-apar%QPmin)/(apar%QPmax-apar%QPmin)
+     org%QN=min(apar%QNmax,max(apar%QNmin,org%N/org%C)) !make sure that Q remains within the bounds
+     org%QNr=(org%QN-apar%QNmin)/(apar%QNmax-apar%QNmin)
      
      !write(*,*)'QN,QP',org%QN,org%QP
      
