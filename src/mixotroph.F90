@@ -1,5 +1,9 @@
 #include "fabm_driver.h"
 
+!avoid problems due to invalid diagnostic values:
+!define _REPLNAN_(X) X !changes back to original code
+#define _REPLNAN_(X) nan_num(X)
+
 !-----------------------------------------------------------------------
 !BOP
 !
@@ -656,7 +660,7 @@
    
    select case (self%metchl)
      case (20) !list here the dynamic Chlorophyll options
-       _SET_DIAGNOSTIC_(self%id_chlrho,org%chlrho)
+       _SET_DIAGNOSTIC_(self%id_chlrho,_REPLNAN_(org%chlrho))
        _SET_ODE_(self%id_boundChl, org%chlsynth - (exud%C + exud_soc + mort%C)*12.0_rk*org%QChl)
        !                             mgChl/m3/s - (mmolC/m3/s)*12.0mgC/mgChl *mgChl/mgC
        !write(*,*)'org%chlsynth', org%chlsynth,'loss:', - (exud%C + exud_soc + mort%C)*org%QChl,'RHS:',org%chlsynth - (exud%C + exud_soc + mort%C)*org%QChl
@@ -732,36 +736,36 @@
    
    ! SET DIAGNOSTICS
    !General
-   _SET_DIAGNOSTIC_(self%id_Closs,(mort%C+excr%C+exud%C)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Ploss,(mort%P+excr%P+exud%P)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Nloss,(mort%N+excr%N+exud%N)*s2d)
+   _SET_DIAGNOSTIC_(self%id_Closs,_REPLNAN_((mort%C+excr%C+exud%C)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Ploss,_REPLNAN_((mort%P+excr%P+exud%P)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Nloss,_REPLNAN_((mort%N+excr%N+exud%N)*s2d))
    if ((self%metIntSt .eq. 0)) then
      !_SET_DIAGNOSTIC_(self%id_QP, org%QP)
      !_SET_DIAGNOSTIC_(self%id_QN, org%QN)
-     _SET_DIAGNOSTIC_(self%id_QPr, org%QPr)
-     _SET_DIAGNOSTIC_(self%id_QNr, org%QNr)
+     _SET_DIAGNOSTIC_(self%id_QPr, _REPLNAN_(org%QPr))
+     _SET_DIAGNOSTIC_(self%id_QNr, _REPLNAN_(org%QNr))
    else if ((self%metIntSt .eq. 1)) then
-     _SET_DIAGNOSTIC_(self%id_QP, org%QP)
-     _SET_DIAGNOSTIC_(self%id_QN, org%QN)
-     _SET_DIAGNOSTIC_(self%id_QPr, org%QPr)
-     _SET_DIAGNOSTIC_(self%id_QNr, org%QNr)
-     _SET_DIAGNOSTIC_(self%id_N2P, org%N/org%P)
+     _SET_DIAGNOSTIC_(self%id_QP, _REPLNAN_(org%QP))
+     _SET_DIAGNOSTIC_(self%id_QN, _REPLNAN_(org%QN))
+     _SET_DIAGNOSTIC_(self%id_QPr, _REPLNAN_(org%QPr))
+     _SET_DIAGNOSTIC_(self%id_QNr, _REPLNAN_(org%QNr))
+     _SET_DIAGNOSTIC_(self%id_N2P, _REPLNAN_(org%N/org%P))
    end if
    !Autotrophy
    if (self%fracaut .gt. 0.0) then
-    _SET_DIAGNOSTIC_(self%id_Plim,Alim%P)
-    _SET_DIAGNOSTIC_(self%id_Nlim,Alim%N)
-    _SET_DIAGNOSTIC_(self%id_Ilim,org%fI)
-    _SET_DIAGNOSTIC_(self%id_MuClim_A,Aupt%C/org%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
-    _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_Pgain_A, Aupt%P*s2d)
-    _SET_DIAGNOSTIC_(self%id_NO3gain_A, Aupt%NO3*s2d)
-    _SET_DIAGNOSTIC_(self%id_NH4gain_A, Aupt%NH4*s2d)
-    _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
-    _SET_DIAGNOSTIC_(self%id_diagChl, org%Chl)
+    _SET_DIAGNOSTIC_(self%id_Plim,_REPLNAN_(Alim%P))
+    _SET_DIAGNOSTIC_(self%id_Nlim,_REPLNAN_(Alim%N))
+    _SET_DIAGNOSTIC_(self%id_Ilim,_REPLNAN_(org%fI))
+    _SET_DIAGNOSTIC_(self%id_MuClim_A,_REPLNAN_(Aupt%C/org%C*s2d))
+    _SET_DIAGNOSTIC_(self%id_NPPR,_REPLNAN_((Aupt%C-exud%C-exud_soc)*s2d))
+    _SET_DIAGNOSTIC_(self%id_Cgain_A,_REPLNAN_(Aupt%C*s2d))
+    _SET_DIAGNOSTIC_(self%id_Pgain_A,_REPLNAN_(Aupt%P*s2d))
+    _SET_DIAGNOSTIC_(self%id_NO3gain_A,_REPLNAN_(Aupt%NO3*s2d))
+    _SET_DIAGNOSTIC_(self%id_NH4gain_A,_REPLNAN_(Aupt%NH4*s2d))
+    _SET_DIAGNOSTIC_(self%id_exudsoc,_REPLNAN_(exud_soc*s2d))
+    _SET_DIAGNOSTIC_(self%id_diagChl,_REPLNAN_(org%Chl))
     if (self%metchl .ne. 0) then
-      _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
+      _SET_DIAGNOSTIC_(self%id_QChl,_REPLNAN_(org%QChl))
     end if
    end if
    select case (self%metvel)
@@ -772,32 +776,32 @@
      case (1)
       !vert_vel=self%w * (1-1/(1+exp(10*(.5-Qr))))
       vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * min(org%QPr,org%QNr)))
-     _SET_DIAGNOSTIC_(self%id_sinkvel,vert_vel*s2d)
+     _SET_DIAGNOSTIC_(self%id_sinkvel,_REPLNAN_(vert_vel*s2d))
    end select
    
    !Heterotrophy
    if (self%fracaut .lt. 1.0) then
     DO i=1,self%num_prey
-     _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,prdat%rpref(i))	
+     _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,_REPLNAN_(prdat%rpref(i)))	
     END DO
-    _SET_DIAGNOSTIC_(self%id_respC,excr%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngC,Ing%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngasC, Ingas%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngunasC, Ingunas%C*s2d)
-    _SET_DIAGNOSTIC_(self%id_asefC,asef%C)
+    _SET_DIAGNOSTIC_(self%id_respC,_REPLNAN_(excr%C*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngC,_REPLNAN_(Ing%C*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngasC,_REPLNAN_(Ingas%C*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngunasC,_REPLNAN_(Ingunas%C*s2d))
+    _SET_DIAGNOSTIC_(self%id_asefC,_REPLNAN_(asef%C))
     !P
-    _SET_DIAGNOSTIC_(self%id_IngP,Ing%P*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngasP, Ingas%P*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngunasP, Ingunas%P*s2d)
-    _SET_DIAGNOSTIC_(self%id_asefP,asef%P)
+    _SET_DIAGNOSTIC_(self%id_IngP,_REPLNAN_(Ing%P*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngasP,_REPLNAN_(Ingas%P*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngunasP,_REPLNAN_(Ingunas%P*s2d))
+    _SET_DIAGNOSTIC_(self%id_asefP,_REPLNAN_(asef%P))
     !N
-    _SET_DIAGNOSTIC_(self%id_IngN,Ing%N*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngasN, Ingas%N*s2d)
-    _SET_DIAGNOSTIC_(self%id_IngunasN, Ingunas%N*s2d)
-    _SET_DIAGNOSTIC_(self%id_asefN,asef%N)
+    _SET_DIAGNOSTIC_(self%id_IngN,_REPLNAN_(Ing%N*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngasN,_REPLNAN_(Ingas%N*s2d))
+    _SET_DIAGNOSTIC_(self%id_IngunasN,_REPLNAN_(Ingunas%N*s2d))
+    _SET_DIAGNOSTIC_(self%id_asefN,_REPLNAN_(asef%N))
     !Si
     if (self%resolve_Si) then
-     _SET_DIAGNOSTIC_(self%id_IngunasSi, Ingunas%Si*s2d)
+     _SET_DIAGNOSTIC_(self%id_IngunasSi,_REPLNAN_(Ingunas%Si*s2d))
     end if
    end if
    !

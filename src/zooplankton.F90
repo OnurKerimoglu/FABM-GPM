@@ -1,5 +1,9 @@
 #include "fabm_driver.h"
 
+!avoid problems due to invalid diagnostic values:
+!define _REPLNAN_(X) X !changes back to original code
+#define _REPLNAN_(X) nan_num(X)
+
 !-----------------------------------------------------------------------
 !BOP
 !
@@ -535,43 +539,43 @@
    
    ! SET DIAGNOSTICS
    !General
-   _SET_DIAGNOSTIC_(self%id_Closs,(mort%C+excr%C)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Ploss,(mort%P+excr%P)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Nloss,(mort%N+excr%N)*s2d)
+   _SET_DIAGNOSTIC_(self%id_Closs,_REPLNAN_((mort%C+excr%C)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Ploss,_REPLNAN_((mort%P+excr%P)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Nloss,_REPLNAN_((mort%N+excr%N)*s2d))
    if ((self%metIntSt .eq. 0)) then
      !_SET_DIAGNOSTIC_(self%id_QP, org%QP)
      !_SET_DIAGNOSTIC_(self%id_QN, org%QN)
-     _SET_DIAGNOSTIC_(self%id_QPr, org%QPr)
-     _SET_DIAGNOSTIC_(self%id_QNr, org%QNr)
+     _SET_DIAGNOSTIC_(self%id_QPr,_REPLNAN_(org%QPr))
+     _SET_DIAGNOSTIC_(self%id_QNr,_REPLNAN_(org%QNr))
    else if ((self%metIntSt .eq. 1)) then
-     _SET_DIAGNOSTIC_(self%id_QP, org%QP)
-     _SET_DIAGNOSTIC_(self%id_QN, org%QN)
-     _SET_DIAGNOSTIC_(self%id_QPr, org%QPr)
-     _SET_DIAGNOSTIC_(self%id_QNr, org%QNr)
-     _SET_DIAGNOSTIC_(self%id_N2P, org%N/org%P)
+     _SET_DIAGNOSTIC_(self%id_QP,_REPLNAN_(org%QP))
+     _SET_DIAGNOSTIC_(self%id_QN,_REPLNAN_(org%QN))
+     _SET_DIAGNOSTIC_(self%id_QPr,_REPLNAN_(org%QPr))
+     _SET_DIAGNOSTIC_(self%id_QNr,_REPLNAN_(org%QNr))
+     _SET_DIAGNOSTIC_(self%id_N2P,_REPLNAN_(org%N/org%P))
    end if
    !Heterotrophy
    DO i=1,self%num_prey
-    _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,prdat%rpref(i))	
+    _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,_REPLNAN_(prdat%rpref(i)))	
    END DO
-   _SET_DIAGNOSTIC_(self%id_respC,excr%C*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngC,Ing%C*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngasC, Ingas%C*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngunasC, Ingunas%C*s2d)
-   _SET_DIAGNOSTIC_(self%id_asefC,asef%C)
+   _SET_DIAGNOSTIC_(self%id_respC,_REPLNAN_(excr%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngC,_REPLNAN_(Ing%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngasC,_REPLNAN_(Ingas%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngunasC,_REPLNAN_(Ingunas%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_asefC,_REPLNAN_(asef%C))
    !P
-   _SET_DIAGNOSTIC_(self%id_IngP,Ing%P*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngasP, Ingas%P*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngunasP, Ingunas%P*s2d)
-   _SET_DIAGNOSTIC_(self%id_asefP,asef%P)
+   _SET_DIAGNOSTIC_(self%id_IngP,_REPLNAN_(Ing%P*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngasP,_REPLNAN_(Ingas%P*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngunasP,_REPLNAN_(Ingunas%P*s2d))
+   _SET_DIAGNOSTIC_(self%id_asefP,_REPLNAN_(asef%P))
    !N
-   _SET_DIAGNOSTIC_(self%id_IngN,Ing%N*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngasN, Ingas%N*s2d)
-   _SET_DIAGNOSTIC_(self%id_IngunasN, Ingunas%N*s2d)
-   _SET_DIAGNOSTIC_(self%id_asefN,asef%N)
+   _SET_DIAGNOSTIC_(self%id_IngN,_REPLNAN_(Ing%N*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngasN, _REPLNAN_(Ingas%N*s2d))
+   _SET_DIAGNOSTIC_(self%id_IngunasN, _REPLNAN_(Ingunas%N*s2d))
+   _SET_DIAGNOSTIC_(self%id_asefN,_REPLNAN_(asef%N))
    !Si
    if (self%resolve_Si) then
-     _SET_DIAGNOSTIC_(self%id_IngunasSi, Ingunas%Si*s2d)
+     _SET_DIAGNOSTIC_(self%id_IngunasSi,_REPLNAN_(Ingunas%Si*s2d))
    end if
    !
    !END OF WRITE

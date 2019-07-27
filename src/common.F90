@@ -1,14 +1,15 @@
 #include "fabm_driver.h"
-
+   
 module gpm_common
 
    use fabm_types
    use fabm_standard_variables
-
+   
    implicit none
 
-   public
+   public nan_num
    
+   real(rk),private :: zero   = 0.0_rk
    real(rk),parameter :: molqperday_per_W=1.0_rk/0.4_rk ![W/m2 = 0.4 mol quanta/m2/d ] Cloern et al 1995
    real(rk),parameter :: CMass   = 12.011_rk
    !real(rk),parameter :: qnRF = 16._rk/106._rk
@@ -1117,6 +1118,33 @@ module gpm_common
    end function 
 !EOC
 !-----------------------------------------------------------------------
+
+!-----------------------------------------------------------------------
+!BOP
+!
+! !IROUTINE: converts nan-to be numbers to a valid Fill_Value 
+!
+! !INTERFACE:
+real(rk) function nan_num(x)
+
+   implicit none
+   real(rk), intent(in)          :: x
+   real(rk)            :: xnan,xinf,xinfneg
+!--------------------------------------------------------------
+   xnan=zero/zero
+   xinf=1.0_rk/zero
+   xinfneg=-1.0_rk/zero
+   if ((x .eq. xinfneg) .or. (x .eq. xinf) .or. (x .eq. xnan)) then
+     nan_num=-2.e20_rk !that's the default FABM missing value
+   else 
+     nan_num=x
+   endif
+   !write(0,*) xnan,x,nan_num
+   
+   end function nan_num
+!EOC
+!-----------------------------------------------------------------------
+   
 
 ! required if light limitation is calculated as in Ecoham
 !function get_Iopt

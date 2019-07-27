@@ -1,5 +1,9 @@
 #include "fabm_driver.h"
 
+!avoid problems due to invalid diagnostic values:
+!define _REPLNAN_(X) X !changes back to original code
+#define _REPLNAN_(X) nan_num(X)
+
 !-----------------------------------------------------------------------
 !BOP
 !
@@ -459,7 +463,7 @@
    
    select case (self%metchl)
      case (20) !list here the dynamic Chlorophyll options
-       _SET_DIAGNOSTIC_(self%id_chlrho,org%chlrho)
+       _SET_DIAGNOSTIC_(self%id_chlrho,_REPLNAN_(org%chlrho))
        _SET_ODE_(self%id_boundChl, org%chlsynth - (exud%C + exud_soc + mort%C)*12.0_rk*org%QChl)
        !                             mgChl/m3/s - (mmolC/m3/s)*12.0mgC/mgChl *mgChl/mgC
        !write(*,*)'org%chlsynth', org%chlsynth,'loss:', - (exud%C + exud_soc + mort%C)*org%QChl,'RHS:',org%chlsynth - (exud%C + exud_soc + mort%C)*org%QChl
@@ -538,38 +542,38 @@
    
    ! Diagnostics
    !General
-   _SET_DIAGNOSTIC_(self%id_Closs,(mort%C+exud%C+exud_soc)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Ploss,(mort%P+exud%P)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Nloss,(mort%N+exud%N)*s2d)
+   _SET_DIAGNOSTIC_(self%id_Closs,_REPLNAN_((mort%C+exud%C+exud_soc)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Ploss,_REPLNAN_((mort%P+exud%P)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Nloss,_REPLNAN_((mort%N+exud%N)*s2d))
    if ((self%metIntSt .eq. 0)) then
      !_SET_DIAGNOSTIC_(self%id_QP, org%QP)
      !_SET_DIAGNOSTIC_(self%id_QN, org%QN)
-     _SET_DIAGNOSTIC_(self%id_QPr, org%QPr)
-     _SET_DIAGNOSTIC_(self%id_QNr, org%QNr)
+     _SET_DIAGNOSTIC_(self%id_QPr, _REPLNAN_(org%QPr))
+     _SET_DIAGNOSTIC_(self%id_QNr, _REPLNAN_(org%QNr))
    else if ((self%metIntSt .eq. 1)) then
-     _SET_DIAGNOSTIC_(self%id_QP, org%QP)
-     _SET_DIAGNOSTIC_(self%id_QN, org%QN)
-     _SET_DIAGNOSTIC_(self%id_QPr, org%QPr)
-     _SET_DIAGNOSTIC_(self%id_QNr, org%QNr)
-     _SET_DIAGNOSTIC_(self%id_N2P, org%N/org%P)
+     _SET_DIAGNOSTIC_(self%id_QP, _REPLNAN_(org%QP))
+     _SET_DIAGNOSTIC_(self%id_QN, _REPLNAN_(org%QN))
+     _SET_DIAGNOSTIC_(self%id_QPr, _REPLNAN_(org%QPr))
+     _SET_DIAGNOSTIC_(self%id_QNr, _REPLNAN_(org%QNr))
+     _SET_DIAGNOSTIC_(self%id_N2P, _REPLNAN_(org%N/org%P))
    end if
-   _SET_DIAGNOSTIC_(self%id_Plim,Alim%P)
-   _SET_DIAGNOSTIC_(self%id_Nlim,Alim%N)
+   _SET_DIAGNOSTIC_(self%id_Plim,_REPLNAN_(Alim%P))
+   _SET_DIAGNOSTIC_(self%id_Nlim,_REPLNAN_(Alim%N))
    !Autotrophy
-   _SET_DIAGNOSTIC_(self%id_Ilim,org%fI)
-   _SET_DIAGNOSTIC_(self%id_MuClim_A,Aupt%C/org%C*s2d)
-   _SET_DIAGNOSTIC_(self%id_NPPR, (Aupt%C-exud%C-exud_soc)*s2d)
-   _SET_DIAGNOSTIC_(self%id_Cgain_A, Aupt%C*s2d)
-   _SET_DIAGNOSTIC_(self%id_Pgain_A, Aupt%P*s2d)
-   _SET_DIAGNOSTIC_(self%id_NO3gain_A, Aupt%NO3*s2d)
-   _SET_DIAGNOSTIC_(self%id_NH4gain_A, Aupt%NH4*s2d)
-   _SET_DIAGNOSTIC_(self%id_exudsoc,exud_soc*s2d)
+   _SET_DIAGNOSTIC_(self%id_Ilim,_REPLNAN_(org%fI))
+   _SET_DIAGNOSTIC_(self%id_MuClim_A,_REPLNAN_(Aupt%C/org%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_NPPR, _REPLNAN_((Aupt%C-exud%C-exud_soc)*s2d))
+   _SET_DIAGNOSTIC_(self%id_Cgain_A, _REPLNAN_(Aupt%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_Pgain_A, _REPLNAN_(Aupt%P*s2d))
+   _SET_DIAGNOSTIC_(self%id_NO3gain_A, _REPLNAN_(Aupt%NO3*s2d))
+   _SET_DIAGNOSTIC_(self%id_NH4gain_A, _REPLNAN_(Aupt%NH4*s2d))
+   _SET_DIAGNOSTIC_(self%id_exudsoc,_REPLNAN_(exud_soc*s2d))
    if (self%lim_Si) then
-     _SET_DIAGNOSTIC_(self%id_Silim,Alim%Si)
+     _SET_DIAGNOSTIC_(self%id_Silim,_REPLNAN_(Alim%Si))
    end if
-   _SET_DIAGNOSTIC_(self%id_diagChl, org%Chl)
+   _SET_DIAGNOSTIC_(self%id_diagChl, _REPLNAN_(org%Chl))
    if (self%metchl .ne. 0) then
-     _SET_DIAGNOSTIC_(self%id_QChl, org%QChl)
+     _SET_DIAGNOSTIC_(self%id_QChl, _REPLNAN_(org%QChl))
    end if
    select case (self%metvel)
      case default
@@ -579,7 +583,7 @@
      case (1)
       !vert_vel=self%w * (1-1/(1+exp(10*(.5-min(org%QPr,org%QNr)))))
       vert_vel = -self%w*(0.1_rk+0.9_rk*exp( -5._rk * min(org%QPr,org%QNr)))
-     _SET_DIAGNOSTIC_(self%id_sinkvel,vert_vel*s2d)
+     _SET_DIAGNOSTIC_(self%id_sinkvel,_REPLNAN_(vert_vel*s2d))
      !write(*,*)'org%limNP,exp( -5._rk * org%limNP),vert_vel:',org%limNP,exp( -5._rk * org%limNP),vert_vel*s2d
    end select
    !
