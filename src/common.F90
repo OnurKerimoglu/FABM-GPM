@@ -268,9 +268,13 @@ module gpm_common
    prdat%rpref=0.0
    DO i=1,mpar%num_prey
       !if the preferences are specified to change dynamically (e.g., as in Fasham 1990)
-      if (mpar%dynpref) then 
-        prdat%rpref(i)=prdat%corpref(i)*prdat%C(i)/org%ftotC
-        !write(*,'(A,I1,A,3F8.4)'),' '//trim(GPMpl%name)//' prey#',i,' corpref,C/totC,rpref:',prdat%corpref(i),prdat%C(i)/ftotC,prdat%rpref(i)
+      if (mpar%dynpref) then
+        if (org%ftotC .lt. 0.01) then ! this is to avoid a problematic pref=0/0 that can arise when ftotC==0
+          prdat%rpref(i)=0.0
+        else
+          prdat%rpref(i)=prdat%corpref(i)*prdat%C(i)/org%ftotC
+          !write(*,'(A,I1,A,3F8.4)'),' '//trim(GPMpl%name)//' prey#',i,' corpref,C/totC,rpref:',prdat%corpref(i),prdat%C(i)/ftotC,prdat%rpref(i)
+        end if
       else
         prdat%rpref(i)=prdat%corpref(i)
       end if
