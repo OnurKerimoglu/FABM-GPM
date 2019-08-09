@@ -1,13 +1,15 @@
 instances: 
   EH_abioS:
-    use: .false.
+    use: .true.
     long_name: EH-sediment
     model: ecoham/abio_sed
     parameters:
-      resolve_DIC: .true.     # whether to resolve DIC
-      resolve_Si: .true.      # whether to resolve Si-cycle
-      sorpmeth : 1            # method to calculate sorbed-fraction of sediment-P
+      resolve_sedDIM: .true.  # whether resolve sediment-DIM explicitly (otherwise remineralization is direclty channeled to pelagic)
+      resolve_Si: .true.      # whether resolve Si-cycle
+      resolve_DIC: .true.    # whether resolve DIC
       coupled2water: .true.   # whether the benthic model is coupled to a pelagic model
+      sedO2meth : 1           # method to estimate the O2 in sediment. 0: as in pelagic bottom; 1: as est. from pelagic bot. temp
+      sorpmeth : 1            # method to calculate sorbed-fraction of sediment-P. 1: instantaneous, based on sed-O2 [only if resolve_sedDIM] 
       det1_wsed : 0.1         # sedimentation rate of pelagic detritus
       det2_wsed : 1.0        # sedimentation rate of pelagic detritus
       Q10 : 1.5               # Q10 for remineralization
@@ -15,18 +17,23 @@ instances:
       brn : 0.0333            # benthic rem rate for N
       brp : 0.0333            # benthic rem rate for P
       brsi: 0.0130            # benthic rem rate for Si
-      do_sorpeq: 250.0      # [mmolO2/m^3], DO threshold at which sorption exceeds desorption [if sorpmeth=1,2]
+      K_T2do: 20.0          # [mmolO2/C], constant for estimating DO from T [if sedO2meth=1]
+      do_sorpeq: 200.0      # [mmolO2/m^3], DO threshold at which sorption exceeds desorption [if sorpmeth=1]
     initialization:
       POC : 106            # initial benthic organic carbon
       POP : 1.             # initial benthic organic phosphorus
-      PON : 16             # initial benthic organic nitrogentus
+      PON : 16.             # initial benthic organic nitrogentus
       POSi : 15.0         # initial benthic organic silicate (opal)
+      DIC : 106.            # initial benthic inorganic dissolved carbon
+      DIP : 1.            # initial benthic inorganic dissolved phosphorus
+      DIN : 16.0             # initial benthic inorganic dissolved nitrogentus
+      DISi : 15.0          # initial benthic inorganic dissolved silicate
     coupling:
       pelagic_O2 : EH_abioP/O2          # pelagic O2
       pelagic_DIC : EH_abioP/DIC        # pelagic dissolved inorganic carbon
       pelagic_DIP : EH_abioP/DIP        # pelagic dissolved inorganic phosphorus
+      pelagic_NO3: EH_abioP/DINO3       # pelagic NO3      
       pelagic_NH4: EH_abioP/DINH4       # pelagic NH4
-      pelagic_NO3: EH_abioP/DINO3       # pelagic NO3
       pelagic_DISi : EH_abioP/DISi      # pelagic dissolved inorganic silicate
       pelagic_det1C : EH_abioP/det1C    # pelagic detrital carbon 
       pelagic_det1P : EH_abioP/det1P    # pelagic detrital phosphorus 
@@ -48,6 +55,10 @@ instances:
       metairsea: 2            # method to resolve air-sea fluxes; 0: no air-sea flux, 1: EH (O2); 2:ERGOM (O2)
       metairseaEH: 1          # EH-method to resolve the air-sea fluxes when metairsea=1
       cwind: 2.0              # [m/s] constant wind speed (<0 implies it is provided by the driver)
+      kwFzmaxMeth: 3          # [-] background extinction method. 0:kw=0; 1:kw=f(exp(z));2: kw=f(sigm(z));3:kw=f(sigm(z))*f(doy) 
+      a_water : 2.0           # [/m] background attenuation coefficient
+      a_minfr : 0.1           # [-] heuristic depth-dep attenuation
+      a_fz : 10.0             # [-] depth dependent turbidity gradient
       dom_kc : 0.01           # [m2/mmolC] sp. light ext. for doc.
       det1_kc : 0.015          # [m2/mmolC] sp. light ext. for detC.
       det2_kc : 0.015          # [m2/mmolC] sp. light ext. for det2C.
@@ -63,7 +74,8 @@ instances:
       rhoN : 0.1              # [/d] Direct DOM rem. (will be set to 0 if resolve_bac)
       rhoP : 0.1              # [/d] Direct DON rem. (will be set to 0 if resolve_bac)
       xknit: 0.02             # Nitrificaiton rate
-      resolve_bac: .true.     # whether to resolve bacterial remineralization
+      resolve_bac: .false.     # whether to resolve bacterial remineralization
+      resolve_bacnp: .false.   # resolve bacterial N&P explicitly         
       b_exc : 0.2             # excretion rate of bac
       b_v : 0.5               # max upt rate of bac
       b_xk4: 0.2              # half sat conc for DIN upt of bac
@@ -72,12 +84,12 @@ instances:
       b_rcp: 50.0             # molar C:P  ratio of bac
     initialization:
       O2   : 320              # initial O2 [mmolO2/m3]
-      DIC : 100000.0          # initial dissolved inorganic carbon
+      DIC : 1000.0          # initial dissolved inorganic carbon
       DIP : 1.0               # initial dissolved inorganic phosphorus
       DINO3 : 14.40           # initial dissolved inorganic NO3
       DINH4 : 1.60            # initial dissolved inorganic NH4
       DISi :  20.0             # initial dissolved inorganic silica
-      bacC: 1.0               # initial bacterial carbon
+      #bacC: 1.0               # initial bacterial carbon
       #SOC : 1000.0           # initial semi-labile organic carbon
       DOC : 1.06              # initial dissolved organic carbon
       DOP : 0.01               # initial dissolved organic phosphorus
