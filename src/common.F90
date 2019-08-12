@@ -24,6 +24,7 @@ module gpm_common
    real(rk), parameter :: TINY_Si=5._rk*15._rk/106._rk !used for N uptake
    real(rk), parameter :: TINYPREYC =1.0e0    ! the minimum prey-C concentration [mmolC/m3] detectable by predators
    real(rk), parameter :: eps     = 1.0e-6 ! number smaller than "TINY", e.g, used as the treshold value for mortality
+   integer, parameter :: max_preynum = 8 !maximum number of prey. Increase and recompile if necessary
    
    ! !PUBLIC DERIVED TYPES:
    type type_env
@@ -108,22 +109,22 @@ module gpm_common
    
    !structure to collect prey data
    type,public                          :: prey_data
-      real(rk),dimension(:),allocatable :: corpref
-      real(rk),dimension(:),allocatable :: rpref
-      real(rk),dimension(:),allocatable :: C
-      real(rk),dimension(:),allocatable :: P      
-      real(rk),dimension(:),allocatable :: N
-      real(rk),dimension(:),allocatable :: Chl
-      real(rk),dimension(:),allocatable :: Si
-      real(rk),dimension(:),allocatable :: grC
-      real(rk),dimension(:),allocatable :: grP
-      real(rk),dimension(:),allocatable :: grN
-      real(rk),dimension(:),allocatable :: grChl
-      real(rk),dimension(:),allocatable :: grSi
-      real(rk),dimension(:),allocatable :: Qr
-      real(rk),dimension(:),allocatable :: QPr
-      real(rk),dimension(:),allocatable :: QNr
-      real(rk),dimension(:),allocatable :: weight
+      real(rk),dimension(max_preynum)   :: corpref
+      real(rk),dimension(max_preynum) :: rpref
+      real(rk),dimension(max_preynum) :: C
+      real(rk),dimension(max_preynum) :: P      
+      real(rk),dimension(max_preynum) :: N
+      real(rk),dimension(max_preynum) :: Chl
+      real(rk),dimension(max_preynum) :: Si
+      real(rk),dimension(max_preynum) :: grC
+      real(rk),dimension(max_preynum) :: grP
+      real(rk),dimension(max_preynum) :: grN
+      real(rk),dimension(max_preynum) :: grChl
+      real(rk),dimension(max_preynum) :: grSi
+      real(rk),dimension(max_preynum) :: Qr
+      real(rk),dimension(max_preynum) :: QPr
+      real(rk),dimension(max_preynum) :: QNr
+      real(rk),dimension(max_preynum) :: weight
    end type
    
    ! a base model type to be potentially used for all 'life' modules
@@ -264,8 +265,8 @@ module gpm_common
    END DO
    
    !calculate grazing rate for each prey unit and total grazing  
-   prdat%grC=0.0; prdat%grN=0.0;prdat%grP=0.0
-   prdat%rpref=0.0
+   prdat%grC=0.0; prdat%grN=0.0; prdat%grP=0.0; prdat%grChl=0.0; prdat%grSi=0.0
+   prdat%rpref=0.0; prdat%weight=0.0
    DO i=1,mpar%num_prey
       !if the preferences are specified to change dynamically (e.g., as in Fasham 1990)
       if (mpar%dynpref) then

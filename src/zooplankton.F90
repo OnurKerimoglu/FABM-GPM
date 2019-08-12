@@ -310,26 +310,9 @@
    integer                    :: i
    character(len=2)           :: istr !i converted to character string
    type(prey_data)            :: prdat
-   allocate(prdat%corpref(self%num_prey))
-   allocate(prdat%rpref(self%num_prey))
-   allocate(prdat%weight(self%num_prey))
-   allocate(prdat%C(self%num_prey))
-   allocate(prdat%P(self%num_prey))
-   allocate(prdat%N(self%num_prey))
-   allocate(prdat%Chl(self%num_prey))
-   allocate(prdat%Si(self%num_prey))
-   allocate(prdat%grC(self%num_prey))
-   allocate(prdat%grP(self%num_prey))
-   allocate(prdat%grN(self%num_prey))
-   allocate(prdat%grChl(self%num_prey))
-   allocate(prdat%grSi(self%num_prey))
-   allocate(prdat%Qr(self%num_prey))
-   allocate(prdat%QPr(self%num_prey))
-   allocate(prdat%QNr(self%num_prey))
    
    !TODO: resolve the case for metIntSt=0 of the prey?
    !TODO: query prey%id_N, idP,id_Si instead of resolve_N,P,Si
-   !prdat: use dim property (?) instead of allocatable?
    
 !EOP
 !-----------------------------------------------------------------------
@@ -386,6 +369,7 @@
    prdat%QPr=0.0
    prdat%QNr=0.0
    prdat%Qr=0.0 !this is min(QPr,QNr)
+   !prdat%weight,%corpref,%rpref & %grX is assigned 0.0 in get_GronMultiPrey()
    DO i=1,self%num_prey
      write (istr,'(i0)') i
      !C
