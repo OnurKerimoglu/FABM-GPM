@@ -227,11 +227,16 @@
    call self%register_diagnostic_variable(self%id_Nloss,'Nloss','mmolN/m^3/d', ' bulk N loss rate',   &
                                           output=output_time_step_averaged) 
    
-   !heterotrophy                                       
+   !heterotrophy                          
    do i=1,self%num_prey
      write (istr,'(i0)') i
      call self%register_diagnostic_variable(self%prpar(i)%id_realpref,'real_pref_prey'//trim(istr),'-', 'realized pref for prey'//trim(istr),&
                                           output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%prpar(i)%id_preyC,'C_perceived_in_prey'//trim(istr),'mmolC/m^3', 'C in prey'//trim(istr),&
+                                          output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%prpar(i)%id_preyGC ,'C_grazed_from_prey'//trim(istr),'/d', 'C grazed from prey'//trim(istr),&
+                                          output=output_time_step_averaged)
+                                          
    end do
    
    call self%register_diagnostic_variable(self%id_respC,'resp_C','mmolC/m^3/d', 'respiration rate', &
@@ -540,7 +545,9 @@
    end if
    !Heterotrophy
    DO i=1,self%num_prey
-    _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,_REPLNAN_(prdat%rpref(i)))	
+    _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,_REPLNAN_(prdat%rpref(i)))
+    _SET_DIAGNOSTIC_(self%prpar(i)%id_preyC,_REPLNAN_(prdat%C(i)))
+    _SET_DIAGNOSTIC_(self%prpar(i)%id_preyGC,_REPLNAN_(prdat%grC(i)*s2d))
    END DO
    _SET_DIAGNOSTIC_(self%id_respC,_REPLNAN_(excr%C*s2d))
    _SET_DIAGNOSTIC_(self%id_IngC,_REPLNAN_(Ing%C*s2d))
