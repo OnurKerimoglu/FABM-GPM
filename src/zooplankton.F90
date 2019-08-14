@@ -432,10 +432,6 @@
      prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
        _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
-       !write(*,'(A,I1,2F7.4)'),'L428 Chlprey#',i,prdat%Chl(i),TINYPREYC/20._rk
-       if (prdat%Chl(i) .lt. TINYPREYC/20._rk) then
-         prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
-       end if
      end if
      !Si:
      if (self%resolve_Si) then

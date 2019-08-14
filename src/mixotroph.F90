@@ -555,11 +555,7 @@
      prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
        _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
-       if (prdat%Chl(i) .lt. TINYPREYC/20._rk) then
-         prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
-       end if
      end if
-     
      !Si:
      prdat%Si(i)=0.0_rk
      if (self%resolve_Si) then
