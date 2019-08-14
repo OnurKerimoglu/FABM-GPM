@@ -316,15 +316,15 @@
      write (istr,'(i0)') i
      call self%register_diagnostic_variable(self%prpar(i)%id_realpref,'real_pref_prey'//trim(istr),'-', 'realized pref for prey'//trim(istr),&
                                           output=output_instantaneous)
-     call self%register_diagnostic_variable(self%prpar(i)%id_percpreyC,'C_perceived_in_prey'//trim(istr),'mmolC/m^3', 'C perceived in prey'//trim(istr),&
-                                          output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%prpar(i)%id_availpreyC,'C_available_in_prey'//trim(istr),'mmolC/m^3', 'C available in prey'//trim(istr),&
-                                          output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%prpar(i)%id_availpreyN,'N_available_in_prey'//trim(istr),'mmolN/m^3', 'N available in prey'//trim(istr),&
-                                          output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%prpar(i)%id_availpreyP,'P_available_in_prey'//trim(istr),'mmolP/m^3', 'P available in prey'//trim(istr),&
-                                          output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%prpar(i)%id_preyGC ,'C_grazed_from_prey'//trim(istr),'/d', 'C grazed from prey'//trim(istr),&
+     !call self%register_diagnostic_variable(self%prpar(i)%id_percpreyC,'C_perceived_in_prey'//trim(istr),'mmolC/m^3', 'C perceived in prey'//trim(istr),&
+     !                                     output=output_time_step_averaged)
+     !call self%register_diagnostic_variable(self%prpar(i)%id_availpreyC,'C_available_in_prey'//trim(istr),'mmolC/m^3', 'C available in prey'//trim(istr),&
+     !                                     output=output_time_step_averaged)
+     !call self%register_diagnostic_variable(self%prpar(i)%id_availpreyN,'N_available_in_prey'//trim(istr),'mmolN/m^3', 'N available in prey'//trim(istr),&
+     !                                     output=output_time_step_averaged)
+     !call self%register_diagnostic_variable(self%prpar(i)%id_availpreyP,'P_available_in_prey'//trim(istr),'mmolP/m^3', 'P available in prey'//trim(istr),&
+     !                                     output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%prpar(i)%id_preyGC ,'Bulk_C_grazing_of_prey'//trim(istr),'mmolC/m^3/d', 'Bulk_C grazing_of_prey'//trim(istr),&
                                           output=output_time_step_averaged)
     end do
    
@@ -512,7 +512,7 @@
      write (istr,'(i0)') i
      !C
      _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
-     _SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyC,_REPLNAN_(prdat%C(i)))
+     !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyC,_REPLNAN_(prdat%C(i)))
      
      if (prdat%C(i) .lt. TINYPREYC) then
        prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
@@ -520,7 +520,7 @@
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
        _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
-       _SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyP,_REPLNAN_(prdat%P(i)))
+       !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyP,_REPLNAN_(prdat%P(i)))
        if (prdat%P(i) .lt. TINYPREYC/106._rk) then
            prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
          end if
@@ -533,7 +533,7 @@
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
        _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
-       _SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyN,_REPLNAN_(prdat%N(i)))
+       !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyN,_REPLNAN_(prdat%N(i)))
        if (prdat%N(i) .lt. TINYPREYC*16._rk/106._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
        end if
@@ -774,8 +774,8 @@
    if (self%fracaut .lt. 1.0) then
     DO i=1,self%num_prey
      _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,_REPLNAN_(prdat%rpref(i)))
-     _SET_DIAGNOSTIC_(self%prpar(i)%id_percpreyC,_REPLNAN_(prdat%C(i)))
-    _SET_DIAGNOSTIC_(self%prpar(i)%id_preyGC,_REPLNAN_(prdat%grC(i)*s2d))
+     !_SET_DIAGNOSTIC_(self%prpar(i)%id_percpreyC,_REPLNAN_(prdat%C(i)))
+    _SET_DIAGNOSTIC_(self%prpar(i)%id_preyGC,_REPLNAN_(prdat%grC(i)*org%C*s2d))
     END DO
     _SET_DIAGNOSTIC_(self%id_respC,_REPLNAN_(excr%C*s2d))
     _SET_DIAGNOSTIC_(self%id_IngC,_REPLNAN_(Ing%C*s2d))
