@@ -102,7 +102,7 @@ module gpm_common
    type,public                           :: prey_pars
       type (type_state_variable_id)      :: id_C,id_P,id_N,id_Chl
       type (type_dependency_id)          :: id_QPr,id_QNr
-      type (type_diagnostic_variable_id) :: id_realpref,id_preyC,id_preyGC
+      type (type_diagnostic_variable_id) :: id_realpref,id_availpreyC,id_percpreyC,id_preyGC
       real(rk)                           :: pref,C2P,C2N,C2Si
       logical                            :: hasChl
    end type

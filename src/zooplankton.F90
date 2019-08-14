@@ -232,7 +232,9 @@
      write (istr,'(i0)') i
      call self%register_diagnostic_variable(self%prpar(i)%id_realpref,'real_pref_prey'//trim(istr),'-', 'realized pref for prey'//trim(istr),&
                                           output=output_time_step_averaged)
-     call self%register_diagnostic_variable(self%prpar(i)%id_preyC,'C_perceived_in_prey'//trim(istr),'mmolC/m^3', 'C in prey'//trim(istr),&
+     call self%register_diagnostic_variable(self%prpar(i)%id_percpreyC,'C_perceived_in_prey'//trim(istr),'mmolC/m^3', 'C perceived in prey'//trim(istr),&
+                                          output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%prpar(i)%id_availpreyC,'C_available_in_prey'//trim(istr),'mmolC/m^3', 'C available in prey'//trim(istr),&
                                           output=output_time_step_averaged)
      call self%register_diagnostic_variable(self%prpar(i)%id_preyGC ,'C_grazed_from_prey'//trim(istr),'/d', 'C grazed from prey'//trim(istr),&
                                           output=output_time_step_averaged)
@@ -379,6 +381,8 @@
      write (istr,'(i0)') i
      !C
      _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
+     _SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyC,_REPLNAN_(prdat%C(i)))
+    
      !write(*,'(A,I1,2F7.4)'),'L385 Cprey#',i,prdat%C(i),TINYPREYC
      if (prdat%C(i) .lt. TINYPREYC) then
        prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
@@ -544,7 +548,7 @@
    !Heterotrophy
    DO i=1,self%num_prey
     _SET_DIAGNOSTIC_(self%prpar(i)%id_realpref,_REPLNAN_(prdat%rpref(i)))
-    _SET_DIAGNOSTIC_(self%prpar(i)%id_preyC,_REPLNAN_(prdat%C(i)))
+    _SET_DIAGNOSTIC_(self%prpar(i)%id_percpreyC,_REPLNAN_(prdat%C(i)))
     _SET_DIAGNOSTIC_(self%prpar(i)%id_preyGC,_REPLNAN_(prdat%grC(i)*s2d))
    END DO
    _SET_DIAGNOSTIC_(self%id_respC,_REPLNAN_(excr%C*s2d))
