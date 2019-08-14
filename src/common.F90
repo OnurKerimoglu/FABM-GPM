@@ -451,8 +451,10 @@ module gpm_common
      if (.true.) then !this is the default method
        org%QP=1./bpar%C2P
        org%P=org%C*org%QP
+       org%QPr=1.
        org%QN=1./bpar%C2N
        org%N=org%C*org%QN
+       org%QNr=1.
      else
        !QUOTAS (e.g., for debugging purposes)
        org%QP=org%P/org%C

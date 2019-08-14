@@ -532,8 +532,6 @@
    _SET_DIAGNOSTIC_(self%id_Ploss,_REPLNAN_((mort%P+excr%P)*s2d))
    _SET_DIAGNOSTIC_(self%id_Nloss,_REPLNAN_((mort%N+excr%N)*s2d))
    if ((self%metIntSt .eq. 0)) then
-     !_SET_DIAGNOSTIC_(self%id_QP, org%QP)
-     !_SET_DIAGNOSTIC_(self%id_QN, org%QN)
      _SET_DIAGNOSTIC_(self%id_QPr,_REPLNAN_(org%QPr))
      _SET_DIAGNOSTIC_(self%id_QNr,_REPLNAN_(org%QNr))
    else if ((self%metIntSt .eq. 1)) then
