@@ -236,6 +236,10 @@
                                           output=output_time_step_averaged)
      call self%register_diagnostic_variable(self%prpar(i)%id_availpreyC,'C_available_in_prey'//trim(istr),'mmolC/m^3', 'C available in prey'//trim(istr),&
                                           output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%prpar(i)%id_availpreyN,'N_available_in_prey'//trim(istr),'mmolN/m^3', 'N available in prey'//trim(istr),&
+                                          output=output_time_step_averaged)
+     call self%register_diagnostic_variable(self%prpar(i)%id_availpreyP,'P_available_in_prey'//trim(istr),'mmolP/m^3', 'P available in prey'//trim(istr),&
+                                          output=output_time_step_averaged)
      call self%register_diagnostic_variable(self%prpar(i)%id_preyGC ,'C_grazed_from_prey'//trim(istr),'/d', 'C grazed from prey'//trim(istr),&
                                           output=output_time_step_averaged)
                                           
@@ -391,6 +395,7 @@
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
        _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
+       _SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyP,_REPLNAN_(prdat%P(i)))
        !write(*,'(A,I1,2F7.4)'),'L393 Pprey#',i,prdat%P(i),TINYPREYC/106._rk
        if (prdat%P(i) .lt. TINYPREYC/106._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
@@ -404,6 +409,7 @@
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
        _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
+       _SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyN,_REPLNAN_(prdat%N(i)))
        !write(*,'(A,I1,2F7.4)'),'L406 Nprey#',i,prdat%N(i),TINYPREYC*16._rk/106._rk
        if (prdat%N(i) .lt. TINYPREYC*16._rk/106._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
