@@ -18,11 +18,11 @@ module gpm_common
    real(rk), parameter :: pi=acos(-1._rk)
    real(rk), parameter :: s2d = 86400.
    real(rk), parameter :: tres_pXn= 0.0    ! treshold value for phytoplankton losses and mortality
-   real(rk), parameter :: TINY=1.0e0      !a small number, e.g., used as the treshold value for exudation
+   real(rk), parameter :: TINY=1.0e-1      !a small number, e.g., used as the treshold value for exudation
    real(rk), parameter :: TINY_P=5._rk*1._rk/106._rk !used for P uptake
    real(rk), parameter :: TINY_N=5._rk*16._rk/106._rk !used for N uptake
    real(rk), parameter :: TINY_Si=5._rk*15._rk/106._rk !used for N uptake
-   real(rk), parameter :: TINYPREYC =1.0e0    ! the minimum prey-C concentration [mmolC/m3] detectable by predators
+   real(rk), parameter :: TINYPREYC =1.0e-1    ! the minimum prey-C concentration [mmolC/m3] detectable by predators
    real(rk), parameter :: eps     = 1.0e-6 ! number smaller than "TINY", e.g, used as the treshold value for mortality
    integer, parameter :: max_preynum = 8 !maximum number of prey. Increase and recompile if necessary
    
