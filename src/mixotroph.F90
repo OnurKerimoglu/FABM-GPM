@@ -268,7 +268,7 @@
                                           output=output_instantaneous)
    call self%register_diagnostic_variable(self%id_MuClim_A,'MuClimA','/d', 'contribution of autotrophy to C-lim growth',&
                                         output=output_time_step_averaged)
-   call self%register_diagnostic_variable(self%id_NPPR,'NPPR','/d','-NPPR',              &
+   call self%register_diagnostic_variable(self%id_NPPR,'NPPR','mmolC/m^3/d','-NPPR',              &
                                         output=output_time_step_averaged)
    call self%register_diagnostic_variable(self%id_Cgain_A,'CgainA','/d', 'sp. C gain rate by autotrophy',   &
                                         output=output_time_step_averaged)                                          
@@ -748,7 +748,7 @@
     _SET_DIAGNOSTIC_(self%id_Nlim,_REPLNAN_(Alim%N))
     _SET_DIAGNOSTIC_(self%id_Ilim,_REPLNAN_(org%fI))
     _SET_DIAGNOSTIC_(self%id_MuClim_A,_REPLNAN_(Aupt%C/org%C*s2d))
-    _SET_DIAGNOSTIC_(self%id_NPPR,_REPLNAN_((Aupt%C-exud%C-exud_soc)*s2d))
+    _SET_DIAGNOSTIC_(self%id_NPPR,_REPLNAN_((Aupt%C-exud%C-exud_soc)*org%C*s2d))
     _SET_DIAGNOSTIC_(self%id_Cgain_A,_REPLNAN_(Aupt%C*s2d))
     _SET_DIAGNOSTIC_(self%id_Pgain_A,_REPLNAN_(Aupt%P*s2d))
     _SET_DIAGNOSTIC_(self%id_NO3gain_A,_REPLNAN_(Aupt%NO3*s2d))
