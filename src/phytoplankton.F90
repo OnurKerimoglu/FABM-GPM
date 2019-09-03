@@ -562,7 +562,7 @@
    !Autotrophy
    _SET_DIAGNOSTIC_(self%id_Ilim,_REPLNAN_(org%fI))
    _SET_DIAGNOSTIC_(self%id_MuClim_A,_REPLNAN_(Aupt%C/org%C*s2d))
-   _SET_DIAGNOSTIC_(self%id_NPPR, _REPLNAN_((Aupt%C-exud%C-exud_soc)*org%C*s2d))
+   _SET_DIAGNOSTIC_(self%id_NPPR, _REPLNAN_((Aupt%C-exud%C-exud_soc)*s2d))
    _SET_DIAGNOSTIC_(self%id_Cgain_A, _REPLNAN_(Aupt%C*s2d))
    _SET_DIAGNOSTIC_(self%id_Pgain_A, _REPLNAN_(Aupt%P*s2d))
    _SET_DIAGNOSTIC_(self%id_NO3gain_A, _REPLNAN_(Aupt%NO3*s2d))
