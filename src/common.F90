@@ -273,6 +273,7 @@ module gpm_common
         if (org%ftotC .lt. 0.01) then ! this is to avoid a problematic pref=0/0 that can arise when ftotC==0
           prdat%rpref(i)=0.0
         else
+          !> pw_i = pref_i · tC_i / sum_i (pref_i · tC_i)
           prdat%rpref(i)=prdat%corpref(i)*prdat%C(i)/org%ftotC
           !write(*,'(A,I1,A,3F8.4)'),' '//trim(GPMpl%name)//' prey#',i,' corpref,C/totC,rpref:',prdat%corpref(i),prdat%C(i)/ftotC,prdat%rpref(i)
         end if
@@ -289,9 +290,12 @@ module gpm_common
       else
         !weight of food-i among all available food
         org%KzFact=1.0
+        !> fmon = tC_i*pw/(Kz*KzFact + sum(pw*tC_i))
         prdat%weight(i)       = org%get_fMon(prdat%C(i),prdat%rpref(i),org%ftotC,mpar%Kz*org%KzFact)
         !grazing rate of the item
+        !> I^C_{i} = Imax*fT*fmon_i
         prdat%grC(i)       = gmax*fT* prdat%weight(i)                 !molCprey/molCpred/d
+        !> I^X_{i} = I^C_{i} *QX_i
         prdat%grP(i)       = prdat%grC(i)         * prdat%P(i)/prdat%C(i)  !molPprey/molCpred/d
         prdat%grN(i)       = prdat%grC(i)         * prdat%N(i)/prdat%C(i)  !molNprey/molCpred/d
         prdat%grChl(i)     = prdat%grC(i)         * prdat%Chl(i)/prdat%C(i)  !molChlprey/molCpred/d
@@ -337,7 +341,7 @@ module gpm_common
 !EOP
 !-----------------------------------------------------------------------
 !BOC
-
+   !> fmon = food_i*pref/(Kz*KzFact + sum(food_i))
    get_fmon = food*pref / (Kzeff+foodtot)
    
    end function get_fmon

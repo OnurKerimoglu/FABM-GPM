@@ -455,14 +455,19 @@
    !if (env%par .gt. 0.0) write(*,'(A,5F14.10)')'Cupt,Nupt,exsoc,exC,exN',Aupt%C*s2d,Aupt%N*s2d,exud_soc*s2d,exud%C*s2d,exud%N*s2d
    !if (env%par .gt. 0.0) write(*,'(A,3F14.8)')'Aupt%C:N,exud%C:N,mort%C:N:',(Aupt%C-exud_soc)/Aupt%N,(exud%C)/exud%N,mort%C/mort%N
    !write(*,'(A,2F14.10)')'C2N, RHS C/N',self%C2N,(Aupt%C - exud%C - mort%C - exud_soc)/(Aupt%N - exud%N - mort%N)
+   !> **Phytoplankton Source Terms**
+   !> dpC/dt = dic_pC - pC_DOC - pC_SOC - M^C
    _SET_ODE_(self%id_boundC, Aupt%C - exud%C - exud_soc- mort%C)
    if ((self%metIntSt .eq. 1)) then ! .or. (self%metIntSt .eq. 0)  !(for debugging purposes)
-     _SET_ODE_(self%id_boundP, Aupt%P - exud%P - mort%P) 
+     !> dpP/dt = dip_pP - pC_DOP - M^P
+     !> dpN/dt = no3_pN + nh4_pN - pC_DOP - M^N
+     _SET_ODE_(self%id_boundP, Aupt%P - exud%P - mort%P)
      _SET_ODE_(self%id_boundN, Aupt%NO3+Aupt%NH4 - exud%N - mort%N)
    end if
    
    select case (self%metchl)
      case (20) !list here the dynamic Chlorophyll options
+       !> dpChl/dt = \%rhochl*dic_pC -(pC_DOC + pC_SOC + M^C)*12*Theta
        _SET_DIAGNOSTIC_(self%id_chlrho,_REPLNAN_(org%chlrho))
        _SET_ODE_(self%id_boundChl, org%chlsynth - (exud%C + exud_soc + mort%C)*12.0_rk*org%QChl)
        !                             mgChl/m3/s - (mmolC/m3/s)*12.0mgC/mgChl *mgChl/mgC

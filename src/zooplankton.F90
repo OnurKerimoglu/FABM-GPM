@@ -476,9 +476,12 @@
    !
    ! SET RHS 
    !C
+   !> dzC_j/dt = \sum_k {tC_k\_zC_j} - zCj_DIC - M^C_j
    _SET_ODE_(self%id_boundC, Ingas%C - excr%C - mort%C)
    !P,N
    if (self%metIntSt .eq. 1) then
+     !> dzC_j/dt = \sum_k {tP_k\_zp_j} - zPj_DIP - M^P_j
+     !> dzC_j/dt = \sum_k {tN_k\_zN_j} - zNj_DIN - M^N_j
      _SET_ODE_(self%id_boundP, Ingas%P - excr%P - mort%P) 
      _SET_ODE_(self%id_boundN, Ingas%N - excr%N - mort%N)
    end if
@@ -486,17 +489,21 @@
    !grazing targets
    DO i=1,self%num_prey
      !C
+     !> dpC_k/dt = I^C_{j,k} * Z^C_j
      _SET_ODE_(self%prpar(i)%id_C,-prdat%grC(i)*org%C) !molC/molC/d *molC/m3 =molC/m3/d !*(1.0-self%fracaut)
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
+       !> dpP_k/dt = I^P_{j,k} * Z^C_j
        _SET_ODE_(self%prpar(i)%id_P,-prdat%grP(i)*org%C) !molP/molC/d *molC/m3 =molP/m3/d
      end if
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
+       !> dpN_k/dt = I^N_{i,k} * Z^C_j
        _SET_ODE_(self%prpar(i)%id_N,-prdat%grN(i)*org%C) !molN/molC/d *molC/m3 =molP/m3/d
      end if
      !Chl
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
+       !> dpChl_k/dt = I^{chl}_{i,k} * Z^C_j
        _SET_ODE_(self%prpar(i)%id_Chl,-prdat%grChl(i)*org%C) !molChl/molC/d *molC/m3 =molChl/m3/d
      end if
    END DO
