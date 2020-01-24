@@ -2,7 +2,7 @@ instances:
   EH_abioS:
     use: .true.
     long_name: EH-sediment
-    model: ecoham/abio_sed
+    model: gpm/abio_sed_EH
     parameters:
       resolve_sedDIM: .true.  # whether resolve sediment-DIM explicitly (otherwise remineralization is direclty channeled to pelagic)
       resolve_Si: .true.      # whether resolve Si-cycle
@@ -45,7 +45,7 @@ instances:
   EH_abioP:
     use: .true.
     long_name: EH-pelagic
-    model: ecoham/abio_pel
+    model: gpm/abio_pel_EH
     parameters:
       Idm_met: 0              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_DIC: .true.     # whether to resolve DIC

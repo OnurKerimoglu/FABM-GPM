@@ -2,7 +2,7 @@ instances:
   EH_abioS:
     use: .true.
     long_name: EH-sediment
-    model: ecoham/abio_sed
+    model: gpm/abio_sed_EH
     parameters:
       resolve_sedDIM: .true.  # whether resolve sediment-DIM explicitly (otherwise remineralization is direclty channeled to pelagic)
       resolve_Si: .true.      # whether resolve Si-cycle
@@ -45,7 +45,7 @@ instances:
   EH_abioP:
     use: .true.
     long_name: EH-pelagic
-    model: ecoham/abio_pel
+    model: gpm/abio_pel_EH
     parameters:
       Idm_met: 0              #method to daily mean light. 0: none, 1: I0dm, 2: PARdm
       resolve_DIC: .true.     # whether to resolve DIC
@@ -74,7 +74,7 @@ instances:
       rhoN : 0.1              # [/d] Direct DOM rem. (will be set to 0 if resolve_bac)
       rhoP : 0.1              # [/d] Direct DON rem. (will be set to 0 if resolve_bac)
       xknit: 0.02             # Nitrificaiton rate
-      resolve_bac: .false.     # whether to resolve bacterial remineralization
+      resolve_bac: .true.     # whether to resolve bacterial remineralization
       resolve_bacnp: .false.   # resolve bacterial N&P explicitly         
       b_exc : 0.2             # excretion rate of bac
       b_v : 0.5               # max upt rate of bac
