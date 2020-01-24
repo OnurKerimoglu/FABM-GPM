@@ -8,6 +8,8 @@ add_library(fabm_models_gpm OBJECT
             phytoplankton.F90
             zooplankton.F90
             mixotroph.F90
+            abio_pel_EH.F90
+            abio_sed_EH.F90
            )
 
 add_dependencies(fabm_models_gpm fabm_base)
