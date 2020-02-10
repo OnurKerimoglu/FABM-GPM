@@ -377,8 +377,8 @@ module gpm_common
    asef%C=mpar%asefC
    
    if ((mpar%metIntSt .eq. 1) .and. (mpar%QPmax .ne. mpar%QPmin)) then !non-homeostatis:
-     asef%P=mpar%asefP*(_ONE_-org%QPr)  !asef%P: decreases with increasing quota
-     asef%N=mpar%asefN*(_ONE_-org%QNr)  !asef%P: decreases with increasing quota
+     asef%P=mpar%asefP*(1.0_rk-org%QPr)  !asef%P: decreases with increasing quota
+     asef%N=mpar%asefN*(1.0_rk-org%QNr)  !asef%P: decreases with increasing quota
    else                                 !homeostasis:
      asef%P=mpar%asefP
      if (asef%P*Ing%P .gt. asef%C*Ing%C*org%QP) then !P-surplus
@@ -462,18 +462,18 @@ module gpm_common
      else
        !QUOTAS (e.g., for debugging purposes)
        org%QP=org%P/org%C
-       org%QPr=min(_ONE_,max(_ZERO_,(org%QP-bpar%QPmin)/(bpar%QPmax-bpar%QPmin)))
+       org%QPr=min(1.0_rk,max(0.0_rk,(org%QP-bpar%QPmin)/(bpar%QPmax-bpar%QPmin)))
        org%QN=org%N/org%C
-       org%QNr=min(_ONE_,max(_ZERO_,(org%QN-bpar%QNmin)/(bpar%QNmax-bpar%QNmin)))
+       org%QNr=min(1.0_rk,max(0.0_rk,(org%QN-bpar%QNmin)/(bpar%QNmax-bpar%QNmin)))
      end if
      
    else if (bpar%metIntSt .eq. 1) then
      
      !QUOTAS
      org%QP=org%P/org%C
-     org%QPr=min(_ONE_,max(_ZERO_,(org%QP-bpar%QPmin)/(bpar%QPmax-bpar%QPmin)))
+     org%QPr=min(1.0_rk,max(0.0_rk,(org%QP-bpar%QPmin)/(bpar%QPmax-bpar%QPmin)))
      org%QN=org%N/org%C
-     org%QNr=min(_ONE_,max(_ZERO_,(org%QN-bpar%QNmin)/(bpar%QNmax-bpar%QNmin)))
+     org%QNr=min(1.0_rk,max(0.0_rk,(org%QN-bpar%QNmin)/(bpar%QNmax-bpar%QNmin)))
      
    end if
    end subroutine
@@ -570,9 +570,9 @@ module gpm_common
      else
        !QUOTAS (e.g., for debugging purposes)
        org%QP=org%P/org%C
-       org%QPr=min(_ONE_,max(_ZERO_,(org%QP-apar%QPmin)/(apar%QPmax-apar%QPmin)))
+       org%QPr=min(1.0_rk,max(0.0_rk,(org%QP-apar%QPmin)/(apar%QPmax-apar%QPmin)))
        org%QN=org%N/org%C
-       org%QNr=min(_ONE_,max(_ZERO_,(org%QN-apar%QNmin)/(apar%QNmax-apar%QNmin)))
+       org%QNr=min(1.0_rk,max(0.0_rk,(org%QN-apar%QNmin)/(apar%QNmax-apar%QNmin)))
      end if
      
      !LIMITATIONS
@@ -599,8 +599,8 @@ module gpm_common
      
      !LIMITATIONS
      !fN=0 @ Q=Qmin and fN->1 as QP->inf
-     lim%P= _ONE_ - apar%QPmin/org%QP
-     lim%N= _ONE_ - apar%QNmin/org%QN
+     lim%P= 1.0_rk - apar%QPmin/org%QP
+     lim%N= 1.0_rk - apar%QNmin/org%QN
      
      !UPTAKE
      !P
@@ -640,16 +640,16 @@ module gpm_common
      
      !L838- if coupled to carbonate model
      !if (.false.) then
-     !  omega=_ONE_
+     !  omega=1.0_rk
        !omega=ch*ca/aksp !EH 840 ??
      !else
-     !  omega=_ZERO_
+     !  omega=0.0_rk
      !end if
       
      !if (omega .gt. 1.0) then
      !  phylim_calc=(omega-1.0)/((omega-1.0)+xkk) !L856
      !else
-     !  phylimc_calc=_ZERO_
+     !  phylimc_calc=0.0_rk
      !end if
      !org%nutlim=min(org%nutlim,phylimc_calc) !lim_npc in EH
      
@@ -698,8 +698,8 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOC
 !   
-   fy = _ONE_
-   if (org%C .lt. eps) fy=_ZERO_
+   fy = 1.0_rk
+   if (org%C .lt. eps) fy=0.0_rk
    mort%C = fy * (apar%rmd*fT + apar%rmdq*org%C) * org%C
    !write(*,*),trim(apar%name),'mort%C:',mort%C
    mort%P = mort%C*org%QP !pic_d1c+pic_d2c
@@ -711,7 +711,7 @@ module gpm_common
    end if
    !if (apar%resolve_carb) then
    !  if (apar%resolve_cal) then
-       !mort%Ccal=max(_ZERO_,plossk) !p3k_d2k !L910
+       !mort%Ccal=max(0.0_rk,plossk) !p3k_d2k !L910
    !  else 
    !    if (.not. apar%lim_Si) then !non-diatoms
          !psk_d2k (L.1489)
@@ -750,8 +750,8 @@ module gpm_common
 !BOC
 !   
    !L796 -
-   fy = _ONE_
-   if (org%C .lt. TINY) fy = _ZERO_ ! treshold for mortality/loss niche (tres_pXn)
+   fy = 1.0_rk
+   if (org%C .lt. TINY) fy = 0.0_rk ! treshold for mortality/loss niche (tres_pXn)
    exud%C = fy * apar%gam * upt%C  
    exud%P = exud%C * org%QP
    exud%N = exud%C * org%QN
@@ -789,8 +789,8 @@ module gpm_common
 !-----------------------------------------------------------------------
 !BOC
 !   
-   fy = _ONE_
-   if (org%C .lt. TINY) fy = _ZERO_ ! treshold for mortality/loss niche (tres_pXn)
+   fy = 1.0_rk
+   if (org%C .lt. TINY) fy = 0.0_rk ! treshold for mortality/loss niche (tres_pXn)
    excr%C=fy*mpar%rmn*fT*org%C
    excr%P=excr%C*org%QP
    excr%N=excr%C*org%QN
@@ -944,7 +944,7 @@ module gpm_common
      case default 
        mumax=apar%vCmax*s2d
      case (1)
-       mumax=apar%vCmax*s2d*(_ONE_ - apar%QPmin/apar%QPmax)
+       mumax=apar%vCmax*s2d*(1.0_rk - apar%QPmin/apar%QPmax)
    end select
 
    !if (env%par .gt. 0.0) then
@@ -984,7 +984,7 @@ module gpm_common
         !tanh, eg. merico & oguz
         !org%fI=TANH(env%par*apar%islope)
         ! Light acclimation formulation based on surface light intensity (Steele 1962)
-        !org%fI=env%par/max(0.25*env%I0,apar%Imin) *exp(_ONE_-env%par/max(0.25*env%I0,apar%Imin))
+        !org%fI=env%par/max(0.25*env%I0,apar%Imin) *exp(1.0_rk-env%par/max(0.25*env%I0,apar%Imin))
      end select
    !else
    !  org%fI=0.0 !when mumax=0 and par=0, fI can become 0/0=NaN

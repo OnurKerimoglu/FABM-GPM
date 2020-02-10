@@ -141,22 +141,22 @@
 
    ! Register state variables
    call self%register_state_variable(self%id_boundC,'C','mmolC/m^3','bound carbon', & 
-                                    minimum=_ZERO_, specific_light_extinction=self%kc,vertical_movement=self%w*d_per_s, &
+                                    minimum=0.0_rk, specific_light_extinction=self%kc,vertical_movement=self%w*d_per_s, &
                                     no_river_dilution=.true.)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_boundC)
    
    if (self%metIntSt .eq. 0) then
      !call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
-     !                               minimum=_ZERO_)
+     !                               minimum=0.0_rk)
      !call self%register_state_variable(self%id_boundN,'N','mmolN/m^3','bound nitrogen', & 
-     !                               minimum=_ZERO_)
+     !                               minimum=0.0_rk)
      call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_boundC,scale_factor=1./self%C2P)                             
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundC,scale_factor=1./self%C2N)
    else if (self%metIntSt .eq. 1) then  ! .or. (self%metIntSt .eq. 0) !(for debugging purposes)
      call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
-                                    minimum=_ZERO_,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
+                                    minimum=0.0_rk,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
      call self%register_state_variable(self%id_boundN,'N','mmolN/m^3','bound nitrogen', & 
-                                    minimum=_ZERO_,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
+                                    minimum=0.0_rk,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
      call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_boundP)                             
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundN)
    end if
@@ -294,7 +294,7 @@
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_diagChl)
      case (20)
        call self%register_state_variable(self%id_boundChl,'Chl','mg/m^3','bound Chlorophyll', & 
-                                    minimum=_ZERO_,no_river_dilution=.true.)
+                                    minimum=0.0_rk,no_river_dilution=.true.)
        call self%add_to_aggregate_variable(total_chlorophyll,self%id_boundChl)
        call self%register_diagnostic_variable(self%id_chlrho,'Rho_per_Tmax','-', 'regulatory factor for chl synthesis (rho/Tmax in G97 eq.4)', &
                                           output=output_instantaneous) 
@@ -429,7 +429,7 @@
    !end if
    
    ! Enter spatial loops (if any)
-   _FABM_LOOP_BEGIN_
+   _LOOP_BEGIN_
    
    !Reset the rates
    !General
@@ -511,7 +511,7 @@
     DO i=1,self%num_prey
      write (istr,'(i0)') i
      !C
-     _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
+     _GET_(self%prpar(i)%id_C,prdat%C(i))
      !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyC,_REPLNAN_(prdat%C(i)))
      
      if (prdat%C(i) .lt. TINYPREYC) then
@@ -519,7 +519,7 @@
      end if
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
-       _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
+       _GET_(self%prpar(i)%id_P,prdat%P(i))
        !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyP,_REPLNAN_(prdat%P(i)))
        if (prdat%P(i) .lt. TINYPREYC/106._rk) then
            prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
@@ -532,7 +532,7 @@
      end if
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
-       _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
+       _GET_(self%prpar(i)%id_N,prdat%N(i))
        !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyN,_REPLNAN_(prdat%N(i)))
        if (prdat%N(i) .lt. TINYPREYC*16._rk/106._rk) then
          prdat%C(i)=0.0 ! prdat%C(i)=0 will spare the prey
@@ -554,7 +554,7 @@
      !Chl:
      prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
-       _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
+       _GET_(self%prpar(i)%id_Chl,prdat%Chl(i))
      end if
      !Si:
      prdat%Si(i)=0.0_rk
@@ -802,7 +802,7 @@
    !-------------------------------------------------------------------------
    
    ! Leave spatial loops (if any)
-   _FABM_LOOP_END_
+   _LOOP_END_
    
    end subroutine do
 !EOC
@@ -816,11 +816,11 @@
 ! !IROUTINE: Get the vertical velocity of pelagic biogeochemical variables
 !
 ! !INTERFACE:
-   subroutine get_vertical_movement(self,_FABM_ARGS_GET_VERTICAL_MOVEMENT_)
+   subroutine get_vertical_movement(self,_ARGUMENTS_GET_VERTICAL_MOVEMENT_)
 !
 ! !INPUT PARAMETERS:
    class (type_gpm_mixotroph), intent(in) :: self
-   _DECLARE_FABM_ARGS_GET_VERTICAL_MOVEMENT_
+   _DECLARE_ARGUMENTS_GET_VERTICAL_MOVEMENT_
 !
 ! !LOCAL VARIABLES:
    real(rk)                   :: vert_vel,temp,par,I0
@@ -835,7 +835,7 @@
    !_GET_DEPENDENCY_SCALAR_(self%id_yearday,yearday)  ! day of year (diff(d/m/Y - 1/1/Y))
 
    ! Enter spatial loops (if any)
-   _FABM_LOOP_BEGIN_
+   _LOOP_BEGIN_
 
    select case (self%metvel)
      case default
@@ -865,7 +865,7 @@
    !_SET_DIAGNOSTIC_(self%id_vv , vert_vel*s2d)
 
    ! Leave spatial loops (if any)
-   _FABM_LOOP_END_
+   _LOOP_END_
 
    end subroutine get_vertical_movement
 !EOC

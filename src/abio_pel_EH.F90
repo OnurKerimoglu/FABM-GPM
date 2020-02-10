@@ -188,81 +188,81 @@
    !C
    if (self%resolve_DIC) then
     call self%register_state_variable(self%id_DIC,'DIC','mmol C/m^3','dissolved inorganic C', & 
-                                    minimum=_ZERO_,no_river_dilution=.true.)
+                                    minimum=0.0_rk,no_river_dilution=.true.)
     call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_DIC)
    end if
    call self%register_state_variable(self%id_DOC,'DOC','mmol C/m^3','dissolved organic C', & 
-                                    minimum=_ZERO_, specific_light_extinction=self%dom_kc,no_river_dilution=.false.)
+                                    minimum=0.0_rk, specific_light_extinction=self%dom_kc,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_DOC)
    call self%register_state_variable(self%id_det1C,'det1C','mmol C/m^3','C in slow sinking detritus', & 
-                                    minimum=_ZERO_, specific_light_extinction=self%det1_kc,vertical_movement=self%det1_w*s2d,&
+                                    minimum=0.0_rk, specific_light_extinction=self%det1_kc,vertical_movement=self%det1_w*s2d,&
                                     no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_det1C)
    call self%register_state_variable(self%id_det2C,'det2C','mmol C/m^3','C in fast sinking detritus', & 
-                                    minimum=_ZERO_, specific_light_extinction=self%det2_kc,vertical_movement=self%det2_w*s2d,&
+                                    minimum=0.0_rk, specific_light_extinction=self%det2_kc,vertical_movement=self%det2_w*s2d,&
                                     no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_det2C)
 
    if (self%metCexc .ne. 0) then
      call self%register_state_variable(self%id_SOC,'SOC','mmol C/m^3','semi-dissolved organic C', & 
-                                    minimum=_ZERO_, specific_light_extinction=self%dom_kc,no_river_dilution=.true.)
+                                    minimum=0.0_rk, specific_light_extinction=self%dom_kc,no_river_dilution=.true.)
      call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_SOC)
    end if
    
    !P
    call self%register_state_variable(self%id_DIP,'DIP','mmolP/m^3','dissolved inorganic P', & 
-                                    minimum=_ZERO_,no_river_dilution=.false.)
+                                    minimum=0.0_rk,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_DIP)
    call self%register_state_variable(self%id_DOP,'DOP','mmolP/m^3','dissolved organic P', & 
-                                    minimum=_ZERO_,no_river_dilution=.false.)
+                                    minimum=0.0_rk,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_DOP)
    call self%register_state_variable(self%id_det1P,'det1P','mmolP/m^3','P in slow sinking detritus', & 
-                                    minimum=_ZERO_,vertical_movement=self%det1_w*s2d,no_river_dilution=.false.)
+                                    minimum=0.0_rk,vertical_movement=self%det1_w*s2d,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_det1P)
    call self%register_state_variable(self%id_det2P,'det2P','mmolP/m^3','P in fast sinking detritus', & 
-                                    minimum=_ZERO_,vertical_movement=self%det2_w*s2d,no_river_dilution=.false.)
+                                    minimum=0.0_rk,vertical_movement=self%det2_w*s2d,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_det2P)
 
    !N
    call self%register_state_variable(self%id_DINO3,'DINO3','mmolN/m^3','NO3', & 
-                                    minimum=_ZERO_,no_river_dilution=.false.)
+                                    minimum=0.0_rk,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_DINO3)
    call self%register_state_variable(self%id_DINH4,'DINH4','mmolN/m^3','NH4', & 
-                                    minimum=_ZERO_,no_river_dilution=.false.)
+                                    minimum=0.0_rk,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_DINH4)
    call self%register_state_variable(self%id_DON,'DON','mmol N/m^3','dissolved organic N', & 
-                                    minimum=_ZERO_,no_river_dilution=.false.)
+                                    minimum=0.0_rk,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_DON)
    call self%register_state_variable(self%id_det1N,'det1N','mmolN/m^3','N in slow sinking detritus', & 
-                                    minimum=_ZERO_,vertical_movement=self%det1_w*s2d,no_river_dilution=.false.)
+                                    minimum=0.0_rk,vertical_movement=self%det1_w*s2d,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_det1N)
    call self%register_state_variable(self%id_det2N,'det2N','mmolN/m^3','N in fast sinking detritus', & 
-                                    minimum=_ZERO_,vertical_movement=self%det2_w*s2d,no_river_dilution=.false.)
+                                    minimum=0.0_rk,vertical_movement=self%det2_w*s2d,no_river_dilution=.false.)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_det2N)
    
    !O2
-   call self%register_state_variable(self%id_O2,'O2','mmol O2/m^3','O2',no_river_dilution=.true.)!, & minimum=_ZERO_)
+   call self%register_state_variable(self%id_O2,'O2','mmol O2/m^3','O2',no_river_dilution=.true.)!, & minimum=0.0_rk)
    
    !Si
    if (self%resolve_Si) then     
      call self%register_state_variable(self%id_DISi,'DISi','mmol Si/m^3','dissolved inorganic silica', & 
-                                    minimum=_ZERO_,no_river_dilution=.false.)
+                                    minimum=0.0_rk,no_river_dilution=.false.)
      call self%add_to_aggregate_variable(standard_variables%total_silicate,self%id_DISi)
      call self%register_state_variable(self%id_det2Si,'det2Si','mmol Si/m^3','(fast sinking) detrital silica', & 
-                                    minimum=_ZERO_,vertical_movement=self%det2_w*s2d,no_river_dilution=.false.)
+                                    minimum=0.0_rk,vertical_movement=self%det2_w*s2d,no_river_dilution=.false.)
      call self%add_to_aggregate_variable(standard_variables%total_silicate,self%id_det2Si)
    end if 
    
    if (self%resolve_bac) then 
      call self%register_state_variable(self%id_bacC,'bacC','mmol C/m^3','carbon bound to bacteria', &
-                                    minimum=_ZERO_,no_river_dilution=.true.)
+                                    minimum=0.0_rk,no_river_dilution=.true.)
      call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_bacC)
      if (self%resolve_bacnp) then
        call self%register_state_variable(self%id_bacP,'bacP','mmol P/m^3','phosphorus bound to bacteria', &
-                                    minimum=_ZERO_,no_river_dilution=.true.)
+                                    minimum=0.0_rk,no_river_dilution=.true.)
        call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_bacP)
        call self%register_state_variable(self%id_bacN,'bacN','mmol N/m^3','nitrogen bound to bacteria', &
-                                    minimum=_ZERO_,no_river_dilution=.true.)
+                                    minimum=0.0_rk,no_river_dilution=.true.)
        call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_bacN)
      else
        call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_bacC,scale_factor=1./self%b_rcp)
@@ -410,7 +410,7 @@
 ! !IROUTINE: Right hand sides of Detritus model
 !
 ! !INTERFACE:
-   subroutine do(self,_FABM_ARGS_DO_RHS_)
+   subroutine do(self,_ARGUMENTS_DO_)
 !
 ! !DESCRIPTION:
 !
@@ -443,7 +443,7 @@
    end if
    
    ! Enter spatial loops (if any)
-   _FABM_LOOP_BEGIN_
+   _LOOP_BEGIN_
    
    !-------------------------------------------------------------------------
    !PREPARE: retrieve variables
@@ -650,7 +650,7 @@
    !-------------------------------------------------------------------------
    
    ! Leave spatial loops (if any)
-   _FABM_LOOP_END_
+   _LOOP_END_
 
    end subroutine do
 !EOC
@@ -1407,14 +1407,14 @@
 ! !IROUTINE: Get the vertical velocity of pelagic biogeochemical variables
 !
 ! !INTERFACE:
-   subroutine get_vertical_movement(self,_FABM_ARGS_GET_VERTICAL_MOVEMENT_)
+   subroutine get_vertical_movement(self,_ARGUMENTS_GET_VERTICAL_MOVEMENT_)
 !
 ! !USES:
    implicit none
 !
 ! !INPUT PARAMETERS:
    class (type_gpm_abio_pel_EH), intent(in) :: self
-   _DECLARE_FABM_ARGS_GET_VERTICAL_MOVEMENT_
+   _DECLARE_ARGUMENTS_GET_VERTICAL_MOVEMENT_
 !
 ! !LOCAL VARIABLES:
    real(rk)                   :: vert_vel1,vert_vel2,temp,fv !,yearday,par
@@ -1427,7 +1427,7 @@
 !_GET_DEPENDENCY_SCALAR_(self%id_yearday,yearday)  ! day of year (diff(d/m/Y - 1/1/Y))
 
   ! Enter spatial loops (if any)
-  _FABM_LOOP_BEGIN_
+  _LOOP_BEGIN_
 
   select case (self%det_velmet)
     case default
@@ -1436,7 +1436,7 @@
       vert_vel1=self%det1_w
       vert_vel2=self%det2_w
     case (2) !velocity is corrected by the viscosity, calculated as a function of temperature
-      _GET_DEPENDENCY_  (self%id_temp,temp)  ! temperature
+      _GET_  (self%id_temp,temp)  ! temperature
       !in the expression belodet_w, denominator (10**..) gives the viscosity ratio at the ambient and reference (T=20 oC) temperatures (Kestin et al. 1978). So the overall expression is: vel*mu(20)/mu(T)
       fv=1/(10**(((20-temp)/(temp+96))*(1.2378 - 1.303e-3*(20-temp) + 3.06e-6*(20-temp)**2 + 2.55e-8*(20-temp)**3))) 
       vert_vel1=self%det1_w*fv
@@ -1454,7 +1454,7 @@
     _SET_VERTICAL_MOVEMENT_(self%id_det2Si,vert_vel2)
   end if
   ! Leave spatial loops (if any)
-  _FABM_LOOP_END_
+  _LOOP_END_
 
 end subroutine get_vertical_movement
 !EOC
@@ -1489,7 +1489,7 @@ end subroutine get_vertical_movement
 !-----------------------------------------------------------------------
 !BOC
    ! Enter spatial loops (if any)
-   _FABM_LOOP_BEGIN_
+   _LOOP_BEGIN_
    
    ! Background walues
    _GET_(self%id_env_k0,k0)
@@ -1514,11 +1514,11 @@ end subroutine get_vertical_movement
    else if (self%kwFzmaxMeth .eq. 1) then
     _GET_HORIZONTAL_(self%id_zmax, zmax)  ! max depth
     !f(z) exponential convergence to the 10% of 'self%a_water' with depth
-    fz=self%a_minfr + (_ONE_-self%a_minfr)*exp(-zmax/11.0)
+    fz=self%a_minfr + (1.0_rk-self%a_minfr)*exp(-zmax/11.0)
    else if (self%kwFzmaxMeth .eq. 2) then
     _GET_HORIZONTAL_(self%id_zmax, zmax)  ! max depth
     !f(z)=sigmoidal function of depth with an upper plateau (100%) at 0-10 m and a lower (10%) for 30+
-    fz=self%a_minfr+(_ONE_-self%a_minfr)*(1.0-1.0/(_ONE_+exp(self%a_fz-zmax*0.5)))
+    fz=self%a_minfr+(1.0_rk-self%a_minfr)*(1.0-1.0/(1.0_rk+exp(self%a_fz-zmax*0.5)))
    else if (self%kwFzmaxMeth .eq. 3) then
     
     _GET_GLOBAL_ (self%id_doy,doy) !day of year
@@ -1547,7 +1547,7 @@ end subroutine get_vertical_movement
    _SET_DIAGNOSTIC_(self%id_kw,kw)
    
    ! Leave spatial loops (if any)
-   _FABM_LOOP_END_
+   _LOOP_END_
 
    end subroutine get_light_extinction
 !EOC

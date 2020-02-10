@@ -144,35 +144,35 @@
    ! Register state variables
    !POM pool in sediment:
    !C
-   call self%register_state_variable(self%id_POMsed_C,'POC','mmol C/m^2','particulate organic carbon in sediment', minimum=_ZERO_)
+   call self%register_state_variable(self%id_POMsed_C,'POC','mmol C/m^2','particulate organic carbon in sediment', minimum=0.0_rk)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_POMsed_C)
    !P
-   call self%register_state_variable(self%id_POMsed_P,'POP','mmol P/m^2','particulate organic detrital phosphorus in sediment', minimum=_ZERO_)
+   call self%register_state_variable(self%id_POMsed_P,'POP','mmol P/m^2','particulate organic detrital phosphorus in sediment', minimum=0.0_rk)
    call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_POMsed_P)
    !N
-   call self%register_state_variable(self%id_POMsed_N,'PON','mmol N/m^2','particulate organic detrital nitrogen in sediment', minimum=_ZERO_)
+   call self%register_state_variable(self%id_POMsed_N,'PON','mmol N/m^2','particulate organic detrital nitrogen in sediment', minimum=0.0_rk)
    call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_POMsed_N)
    !Si
    if (self%resolve_Si) then
-     call self%register_state_variable(self%id_POMsed_Si,'POSi','mmol Si/m^2','particulate organic detrital silica in sediment', minimum=_ZERO_)
+     call self%register_state_variable(self%id_POMsed_Si,'POSi','mmol Si/m^2','particulate organic detrital silica in sediment', minimum=0.0_rk)
      call self%add_to_aggregate_variable(standard_variables%total_silicate,self%id_POMsed_Si)
    end if
    !(optional) DIM pool in sediment:
    if (self%resolve_sedDIM) then
      !C
      if (self%resolve_DIC) then
-       call self%register_state_variable(self%id_DIMsed_C,'DIC','mmol C/m^2','dissolved inorganic carbon in sediment', minimum=_ZERO_)
+       call self%register_state_variable(self%id_DIMsed_C,'DIC','mmol C/m^2','dissolved inorganic carbon in sediment', minimum=0.0_rk)
        call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_DIMsed_C)
      end if
      !P
-     call self%register_state_variable(self%id_DIMsed_P,'DIP','mmol P/m^2','dissolved inorganic phosphorus in sediment', minimum=_ZERO_)
+     call self%register_state_variable(self%id_DIMsed_P,'DIP','mmol P/m^2','dissolved inorganic phosphorus in sediment', minimum=0.0_rk)
      call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_DIMsed_P)
      !N
-     call self%register_state_variable(self%id_DIMsed_N,'DIN','mmol N/m^2','dissolved inorganic nitrogen in sediment', minimum=_ZERO_)
+     call self%register_state_variable(self%id_DIMsed_N,'DIN','mmol N/m^2','dissolved inorganic nitrogen in sediment', minimum=0.0_rk)
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_DIMsed_N)
      !Si
      if (self%resolve_Si) then
-       call self%register_state_variable(self%id_DIMsed_Si,'DISi','mmol Si/m^2','dissolved inorganic silica in sediment', minimum=_ZERO_)
+       call self%register_state_variable(self%id_DIMsed_Si,'DISi','mmol Si/m^2','dissolved inorganic silica in sediment', minimum=0.0_rk)
        call self%add_to_aggregate_variable(standard_variables%total_silicate,self%id_DIMsed_Si)
      end if 
    end if
@@ -494,22 +494,22 @@
    !
    ! Set local temporal derivatives of sediment variables
    !C
-   _SET_ODE_BEN_(self%id_POMsed_C,det1_sed%C+det2_sed%C - sed_rem%C)
-   _SET_ODE_BEN_(self%id_POMsed_P,det1_sed%P+det2_sed%P - sed_rem%P)
-   _SET_ODE_BEN_(self%id_POMsed_N,det1_sed%N+det2_sed%N - sed_rem%NH4 - sed_nn2)
+   _SET_BOTTOM_ODE_(self%id_POMsed_C,det1_sed%C+det2_sed%C - sed_rem%C)
+   _SET_BOTTOM_ODE_(self%id_POMsed_P,det1_sed%P+det2_sed%P - sed_rem%P)
+   _SET_BOTTOM_ODE_(self%id_POMsed_N,det1_sed%N+det2_sed%N - sed_rem%NH4 - sed_nn2)
    !Si
    if (self%resolve_Si) then
-     _SET_ODE_BEN_(self%id_POMsed_Si,det2_sed%Si - sed_rem%Si)
+     _SET_BOTTOM_ODE_(self%id_POMsed_Si,det2_sed%Si - sed_rem%Si)
    end if
    
    if (self%resolve_sedDIM) then
      if (self%resolve_DIC) then
-       _SET_ODE_BEN_(self%id_DIMsed_C, sed_rem%C - sed_wdim%C)
+       _SET_BOTTOM_ODE_(self%id_DIMsed_C, sed_rem%C - sed_wdim%C)
      end if
-     _SET_ODE_BEN_(self%id_DIMsed_P,sed_rem%P - sed_wdim%P)
-     _SET_ODE_BEN_(self%id_DIMsed_N,sed_rem%NH4 - sed_wdim%NH4)
+     _SET_BOTTOM_ODE_(self%id_DIMsed_P,sed_rem%P - sed_wdim%P)
+     _SET_BOTTOM_ODE_(self%id_DIMsed_N,sed_rem%NH4 - sed_wdim%NH4)
      if (self%resolve_Si) then
-       _SET_ODE_BEN_(self%id_DIMsed_Si,sed_rem%Si - sed_wdim%Si)
+       _SET_BOTTOM_ODE_(self%id_DIMsed_Si,sed_rem%Si - sed_wdim%Si)
      end if
    end if
    

@@ -116,22 +116,22 @@
    
    ! Register state variables
    call self%register_state_variable(self%id_boundC,'C','mmolC/m^3','bound carbon', & 
-                                    minimum=_ZERO_, specific_light_extinction=self%kc,vertical_movement=self%w*d_per_s,&
+                                    minimum=0.0_rk, specific_light_extinction=self%kc,vertical_movement=self%w*d_per_s,&
                                     no_river_dilution=.true.)
    call self%add_to_aggregate_variable(standard_variables%total_carbon,self%id_boundC)
    
    if (self%metIntSt .eq. 0) then
      !call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
-     !                               minimum=_ZERO_)
+     !                               minimum=0.0_rk)
      !call self%register_state_variable(self%id_boundN,'N','mmolN/m^3','bound nitrogen', & 
-     !                               minimum=_ZERO_)
+     !                               minimum=0.0_rk)
      call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_boundC,scale_factor=1./self%C2P)                             
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundC,scale_factor=1./self%C2N)
    else if (self%metIntSt .eq. 1) then  ! .or. (self%metIntSt .eq. 0) !(for debugging purposes)
      call self%register_state_variable(self%id_boundP,'P','mmolP/m^3','bound phosphorus', & 
-                                    minimum=_ZERO_,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
+                                    minimum=0.0_rk,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
      call self%register_state_variable(self%id_boundN,'N','mmolN/m^3','bound nitrogen', & 
-                                    minimum=_ZERO_,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
+                                    minimum=0.0_rk,vertical_movement=self%w*d_per_s,no_river_dilution=.true.)
      call self%add_to_aggregate_variable(standard_variables%total_phosphorus,self%id_boundP)                             
      call self%add_to_aggregate_variable(standard_variables%total_nitrogen,self%id_boundN)
    end if
@@ -333,7 +333,7 @@
    !end if
    
    ! Enter spatial loops (if any)
-   _FABM_LOOP_BEGIN_
+   _LOOP_BEGIN_
    
    !Reset the rates
    !General
@@ -383,7 +383,7 @@
    DO i=1,self%num_prey
      write (istr,'(i0)') i
      !C
-     _GET_STATE_(self%prpar(i)%id_C,prdat%C(i))
+     _GET_(self%prpar(i)%id_C,prdat%C(i))
      !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyC,_REPLNAN_(prdat%C(i)))
     
      !write(*,'(A,I1,2F7.4)'),'L385 Cprey#',i,prdat%C(i),TINYPREYC
@@ -393,7 +393,7 @@
      end if
      !P
      if (_AVAILABLE_(self%prpar(i)%id_P)) then
-       _GET_STATE_(self%prpar(i)%id_P,prdat%P(i))
+       _GET_(self%prpar(i)%id_P,prdat%P(i))
        !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyP,_REPLNAN_(prdat%P(i)))
        !write(*,'(A,I1,2F7.4)'),'L393 Pprey#',i,prdat%P(i),TINYPREYC/106._rk
        if (prdat%P(i) .lt. TINYPREYC/106._rk) then
@@ -407,7 +407,7 @@
      end if
      !N
      if (_AVAILABLE_(self%prpar(i)%id_N)) then
-       _GET_STATE_(self%prpar(i)%id_N,prdat%N(i))
+       _GET_(self%prpar(i)%id_N,prdat%N(i))
        !_SET_DIAGNOSTIC_(self%prpar(i)%id_availpreyN,_REPLNAN_(prdat%N(i)))
        !write(*,'(A,I1,2F7.4)'),'L406 Nprey#',i,prdat%N(i),TINYPREYC*16._rk/106._rk
        if (prdat%N(i) .lt. TINYPREYC*16._rk/106._rk) then
@@ -430,7 +430,7 @@
      !Chl:
      prdat%Chl(i)=0.0 !if not explicitly provided, is not needed anyway
      if (_AVAILABLE_(self%prpar(i)%id_Chl)) then
-       _GET_STATE_(self%prpar(i)%id_Chl,prdat%Chl(i))
+       _GET_(self%prpar(i)%id_Chl,prdat%Chl(i))
      end if
      !Si:
      if (self%resolve_Si) then
@@ -583,7 +583,7 @@
    !-------------------------------------------------------------------------
    
    ! Leave spatial loops (if any)
-   _FABM_LOOP_END_
+   _LOOP_END_
    
    end subroutine do
 !EOC
