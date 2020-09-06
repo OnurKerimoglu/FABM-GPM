@@ -6,9 +6,9 @@ Copyright 2018 Onur Kerimoglu (kerimoglu.o@gmail.com)
 
 # A few words on GPM, the General Plankton Model
 
-'Generality' of the model is about a generic module (plankton.F90), that describes both autotrophic and heterotrophic processes, and that can optionally resolve C, N, P and Si cycles. This module can be coupled to a BGC model multiple times on run time (i.e., without requiring re-compilation) through a .yaml configuration file (see the example yaml files in testcases folder), and at each instance, the autothrophy/heterotrophy fraction of the plankton can be prescribed (using the parameter 'fracaut'). Besides the plankton module, 2 additional modules to describe the recycling of C, N, P and Si in the pelagic (abio_pel.F90) and sediment (abio_sed.F90) are provided.
+'Generality' of the model is about a generic module (plankton.F90), that describes both autotrophic and heterotrophic processes, and that can optionally resolve C, N, P and Si cycles. This module can be coupled to a BGC model multiple times on run time (i.e., without requiring re-compilation) through a .yaml configuration file (see the example yaml file), and at each instance, the autothrophy/heterotrophy fraction of the plankton can be prescribed (using the parameter 'fracaut'). Besides the plankton module, 2 additional modules to describe the recycling of C, N, P and Si in the pelagic (abio_pel.F90) and sediment (abio_sed.F90) are provided.
 
-A full description of the model and its 3-D application to the southern North Sea is provided by Kerimoglu et al., 2020, Biogoesciences (doi:https://doi.org/10.5194/bg-2020-1).
+A full description of the model and its 3-D application to the southern North Sea is provided by Kerimoglu et al., 2020, Biogoesciences (doi:https://doi.org/10.5194/bg-2020-1). The configuration (yaml) file used for this study is provided in the testcases/ directory.
 
 # Obtaining the code and building 
 
